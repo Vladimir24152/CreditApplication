@@ -17,7 +17,25 @@ public class LoanCalculatorProperties {
 
     private BigDecimal insuranceCostPercent;
 
-    private BigDecimal insuranceRateDiscount = new BigDecimal("2.0");
+    private BigDecimal insuranceRateDiscount;
 
-    private BigDecimal salaryClientDiscount = new BigDecimal("1.0");
+    private BigDecimal salaryClientDiscount;
+
+    private BigDecimal selfEmploeRateAdd;
+
+    private BigDecimal businesOwnerRateAdd;
+
+    private BigDecimal midManagerRateDiscount;
+
+    private BigDecimal topManagerRateDiscount;
+
+    private BigDecimal marriedRateDiscount;
+
+    private BigDecimal divorcedRateAdd;
+
+    private BigDecimal maleRateDiscount;
+
+    private BigDecimal femaleRateDiscount;
+
+    private BigDecimal notBinaryRateAdd;
 }

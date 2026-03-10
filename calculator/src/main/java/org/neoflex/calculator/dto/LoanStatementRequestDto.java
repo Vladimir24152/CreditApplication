@@ -1,11 +1,13 @@
 package org.neoflex.calculator.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -43,10 +45,11 @@ public class LoanStatementRequestDto {
     @Schema(description = "Email", example = "ivan@example.com")
     private String email;
 
-    @NotBlank(message = "Дата рождения обязательна")
+    @NotNull(message = "Дата рождения обязательна")
+    @Past(message = "Дата рождения должна быть в прошлом")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Schema(description = "Дата рождения", example = "1990-01-01")
-    @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Дата должна быть в формате ГГГГ-ММ-ДД")
-    private String birthDate;
+    private LocalDate birthDate;
 
     @NotBlank(message = "Серия паспорта обязательна")
     @Pattern(regexp = "^\\d{4}$", message = "Серия паспорта должна содержать ровно 4 цифры")

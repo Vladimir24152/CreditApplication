@@ -25,7 +25,7 @@ public class CreditDto {
     @Schema(description = "Процентная ставка", example = "12.5")
     private BigDecimal rate;
 
-    @Schema(description = "Полная стоимость кредита", example = "15.3")
+    @Schema(description = "Полная стоимость кредита", example = "1100000")
     private BigDecimal psk;
 
     @Schema(description = "Флаг страховки", example = "true")

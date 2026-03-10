@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CalculatorService {
+public class LoanOfferService {
 
     private final LoanCalculatorProperties calculatorProperties;
 
@@ -50,11 +50,11 @@ public class CalculatorService {
 
         return LoanOfferDto.builder()
                 .statementId(UUID.randomUUID())
-                .requestedAmount(request.getAmount())
-                .totalAmount(totalAmount)
+                .requestedAmount(request.getAmount().setScale(2, RoundingMode.HALF_UP))
+                .totalAmount(totalAmount.setScale(2, RoundingMode.HALF_UP))
                 .term(request.getTerm())
-                .monthlyPayment(monthlyPayment)
-                .rate(rate)
+                .monthlyPayment(monthlyPayment.setScale(2, RoundingMode.HALF_UP))
+                .rate(rate.setScale(2, RoundingMode.HALF_UP))
                 .isInsuranceEnabled(isInsuranceEnabled)
                 .isSalaryClient(isSalaryClient)
                 .build();
@@ -84,23 +84,19 @@ public class CalculatorService {
 
     private BigDecimal calculateMonthlyPayment(BigDecimal totalAmount, Integer term, BigDecimal rate) {
 
-        BigDecimal monthlyInterestRate = rate.divide(new BigDecimal(1200),2,RoundingMode.UP);
+        BigDecimal monthlyInterestRate = rate.divide(new BigDecimal(1200),5,RoundingMode.HALF_UP);
 
-        BigDecimal annuityRatio = monthlyInterestRate.multiply(monthlyInterestRate.add(new BigDecimal(1)).pow(term))
-                .divide(monthlyInterestRate.add(new BigDecimal(1)).pow(term - 1),2,RoundingMode.UP);
+        BigDecimal onePlusRate = BigDecimal.ONE.add(monthlyInterestRate);
+
+        BigDecimal annuityRatio = monthlyInterestRate.multiply(onePlusRate.pow(term))
+                .divide(onePlusRate.pow(term).subtract(BigDecimal.ONE), 10, RoundingMode.HALF_UP);
 
         return totalAmount.multiply(annuityRatio);
     }
 
-    public CreditDto calculateCredit(ScoringDataDto request) {
-
-        return null;
-    }
 
     private void isValidBirthDate(LoanStatementRequestDto request){
-        LocalDate birthDate = LocalDate.parse(request.getBirthDate());
-
-        if(LocalDate.now().minusYears(18).isBefore(birthDate)){
+        if(LocalDate.now().minusYears(18).isBefore(request.getBirthDate())){
             throw new NotValidBirthDateException("Неверная дата рождения, дата рождения должна быть ранее 18 лет от текущей даты");
         }
     }

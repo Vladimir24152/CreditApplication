@@ -7,7 +7,8 @@ import org.neoflex.calculator.dto.CreditDto;
 import org.neoflex.calculator.dto.LoanOfferDto;
 import org.neoflex.calculator.dto.LoanStatementRequestDto;
 import org.neoflex.calculator.dto.ScoringDataDto;
-import org.neoflex.calculator.service.CalculatorService;
+import org.neoflex.calculator.service.CreditCalculationService;
+import org.neoflex.calculator.service.LoanOfferService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,7 +25,10 @@ import static org.neoflex.calculator.constant.ApiConstant.CALCULATOR_URL;
 @RequestMapping(CALCULATOR_URL)
 public class CalculatorController {
 
-    private final CalculatorService calculatorService;
+    private final LoanOfferService loanOfferService;
+
+    private final CreditCalculationService creditCalculationService;
+
 
     /**
      * Расчёт возможных условий кредита на основе предварительных данных
@@ -34,7 +38,7 @@ public class CalculatorController {
     @Operation(description = "Расчёт возможных условий кредита")
     @PostMapping(OFFERS_URL)
     private List<LoanOfferDto> calculateLoanOffers(@Valid @RequestBody LoanStatementRequestDto request){
-        return calculatorService.calculateLoanOffers(request);
+        return loanOfferService.calculateLoanOffers(request);
     }
 
     /**
@@ -45,6 +49,6 @@ public class CalculatorController {
     @Operation(description = "валидация присланных данных, скоринг данных, полный расчет параметров кредита")
     @PostMapping(CALS_URL)
     private CreditDto calculateCredit(@Valid @RequestBody ScoringDataDto request){// <- Сделать валидацию в дто
-        return calculatorService.calculateCredit(request);
+        return creditCalculationService.calculateCredit(request);
     }
 }
