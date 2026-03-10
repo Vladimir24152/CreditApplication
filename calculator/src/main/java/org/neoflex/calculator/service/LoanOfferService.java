@@ -24,6 +24,11 @@ public class LoanOfferService {
 
     private final LoanCalculatorProperties calculatorProperties;
 
+    private static final BigDecimal MONTHS_IN_YEAR = new BigDecimal("12");
+    private static final BigDecimal PERCENT_DIVISOR = new BigDecimal("100");
+    private static final int CALC_SCALE = 5;
+    private static final int RESULT_SCALE = 2;
+
     public List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto request){
 
         isValidBirthDate(request);
@@ -50,11 +55,11 @@ public class LoanOfferService {
 
         return LoanOfferDto.builder()
                 .statementId(UUID.randomUUID())
-                .requestedAmount(request.getAmount().setScale(2, RoundingMode.HALF_UP))
-                .totalAmount(totalAmount.setScale(2, RoundingMode.HALF_UP))
+                .requestedAmount(request.getAmount().setScale(RESULT_SCALE, RoundingMode.HALF_UP))
+                .totalAmount(totalAmount.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
                 .term(request.getTerm())
-                .monthlyPayment(monthlyPayment.setScale(2, RoundingMode.HALF_UP))
-                .rate(rate.setScale(2, RoundingMode.HALF_UP))
+                .monthlyPayment(monthlyPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
+                .rate(rate.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
                 .isInsuranceEnabled(isInsuranceEnabled)
                 .isSalaryClient(isSalaryClient)
                 .build();
@@ -64,8 +69,8 @@ public class LoanOfferService {
 
     private BigDecimal calculateTotalAmount(LoanStatementRequestDto request, boolean isInsuranceEnabled) {
         if (!isInsuranceEnabled) return request.getAmount();
-        BigDecimal insuranceCost = request.getAmount().multiply(calculatorProperties.getInsuranceCostPercent().divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP));
-        return request.getAmount().add(insuranceCost).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal insuranceCost = request.getAmount().multiply(calculatorProperties.getInsuranceCostPercent().divide(PERCENT_DIVISOR, CALC_SCALE, RoundingMode.HALF_UP));
+        return request.getAmount().add(insuranceCost).setScale(RESULT_SCALE, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateRate(boolean isInsuranceEnabled, boolean isSalaryClient) {
@@ -84,12 +89,14 @@ public class LoanOfferService {
 
     private BigDecimal calculateMonthlyPayment(BigDecimal totalAmount, Integer term, BigDecimal rate) {
 
-        BigDecimal monthlyInterestRate = rate.divide(new BigDecimal(1200),5,RoundingMode.HALF_UP);
+        BigDecimal monthlyInterestRate = rate
+                .divide(PERCENT_DIVISOR, CALC_SCALE, RoundingMode.HALF_UP)
+                .divide(MONTHS_IN_YEAR, CALC_SCALE, RoundingMode.HALF_UP);
 
         BigDecimal onePlusRate = BigDecimal.ONE.add(monthlyInterestRate);
 
         BigDecimal annuityRatio = monthlyInterestRate.multiply(onePlusRate.pow(term))
-                .divide(onePlusRate.pow(term).subtract(BigDecimal.ONE), 10, RoundingMode.HALF_UP);
+                .divide(onePlusRate.pow(term).subtract(BigDecimal.ONE), CALC_SCALE, RoundingMode.HALF_UP);
 
         return totalAmount.multiply(annuityRatio);
     }

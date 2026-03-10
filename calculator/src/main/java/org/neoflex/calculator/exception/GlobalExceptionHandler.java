@@ -20,6 +20,15 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler({ScrollingFailed.class})
+    public ResponseEntity<HttpErrorResponse> handlerScrollingFailedErrorException(Exception e) {
+        return buildErrorResponse(
+                HttpStatus.UNPROCESSABLE_ENTITY,
+                HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
+                e.getMessage()
+        );
+    }
+
     private ResponseEntity<HttpErrorResponse> buildErrorResponse(
             HttpStatus status, String type, String message) {
         log.error("{}: {}", type, message);

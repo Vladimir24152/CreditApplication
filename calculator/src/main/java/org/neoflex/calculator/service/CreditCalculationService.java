@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.calculator.config.LoanCalculatorProperties;
 import org.neoflex.calculator.dto.CreditDto;
+import org.neoflex.calculator.dto.LoanStatementRequestDto;
 import org.neoflex.calculator.dto.PaymentScheduleElementDto;
 import org.neoflex.calculator.dto.ScoringDataDto;
+import org.neoflex.calculator.exception.NotValidBirthDateException;
+import org.neoflex.calculator.exception.ScrollingFailed;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -15,18 +18,28 @@ import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.neoflex.calculator.enums.Gender.FEMALE;
-import static org.neoflex.calculator.enums.Gender.MALE;
-import static org.neoflex.calculator.enums.Gender.NOT_BINARY;
+import static org.neoflex.calculator.enums.EmploymentStatus.UNEMPLOYED;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class CreditCalculationService {
 
+    private static final BigDecimal MONTHS_IN_YEAR = new BigDecimal("12");
+    private static final BigDecimal PERCENT_DIVISOR = new BigDecimal("100");
+    private static final BigDecimal MAXIMUM_LOAN_AMOUNT_IN_SALARIES = new BigDecimal("24");
+    private static final int MAX_AGE_FOR_LOAD = 65;
+    private static final int MIN_AGE_FOR_LOAD = 20;
+    private static final int MIN_EXPERIENCE_TOTAL_FOR_LOAD = 18;
+    private static final int MIN_EXPERIENCE_CURRENT_FOR_LOAD = 3;
+    private static final int CALC_SCALE = 5;
+    private static final int RESULT_SCALE = 2;
+
     private final LoanCalculatorProperties calculatorProperties;
 
     public CreditDto calculateCredit(ScoringDataDto request) {
+
+        checkingTheLoanApplication(request);
 
         BigDecimal finalRate = calculateTotalRate(request);
 
@@ -48,17 +61,46 @@ public class CreditCalculationService {
 
 
         CreditDto creditDto = CreditDto.builder()
-                .amount(request.getAmount().setScale(2, RoundingMode.HALF_UP))
+                .amount(request.getAmount().setScale(RESULT_SCALE, RoundingMode.HALF_UP))
                 .term(request.getTerm())
-                .monthlyPayment(monthlyPayment.setScale(2, RoundingMode.HALF_UP))
-                .rate(finalRate.setScale(2, RoundingMode.HALF_UP))
-                .psk(psk.setScale(2, RoundingMode.HALF_UP))
+                .monthlyPayment(monthlyPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
+                .rate(finalRate.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
+                .psk(psk.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
                 .isInsuranceEnabled(request.getIsInsuranceEnabled())
                 .isSalaryClient(request.getIsSalaryClient())
                 .paymentSchedule(paymentSchedule)
                 .build();
 
         return creditDto;
+    }
+
+    private void checkingTheLoanApplication(ScoringDataDto request) {
+        if (request.getEmployment().getEmploymentStatus().equals(UNEMPLOYED)){
+            throw new ScrollingFailed("Отказ в предоставлении займа не трудоустроенным");
+        }
+
+        if (request.getEmployment().getSalary().multiply(MAXIMUM_LOAN_AMOUNT_IN_SALARIES).compareTo(request.getAmount()) < 0){
+            throw new ScrollingFailed("Отказ в предоставлении займа превышающего среднемесячный доход более чем в "
+                    + MAXIMUM_LOAN_AMOUNT_IN_SALARIES + "раза(раз)");
+        }
+
+        int age = Period.between(request.getBirthDate(), LocalDate.now()).getYears();
+
+        if (age < MIN_AGE_FOR_LOAD){
+            throw new ScrollingFailed(String.format("Отказ в предоставлении займа клиентам младше %d лет",MIN_AGE_FOR_LOAD));
+        }
+
+        if (age > MAX_AGE_FOR_LOAD){
+            throw new ScrollingFailed(String.format("Отказ в предоставлении займа клиентам старше %d лет",MAX_AGE_FOR_LOAD));
+        }
+
+        if (request.getEmployment().getWorkExperienceTotal() < MIN_EXPERIENCE_TOTAL_FOR_LOAD){
+            throw new ScrollingFailed(String.format("Отказ в предоставлении займа клиентам с общим стажем работы менее %d месяцев",MIN_EXPERIENCE_TOTAL_FOR_LOAD));
+        }
+
+        if (request.getEmployment().getWorkExperienceCurrent() < MIN_EXPERIENCE_CURRENT_FOR_LOAD){
+            throw new ScrollingFailed(String.format("Отказ в предоставлении займа клиентам с текущем стажем работы менее %d месяцев",MIN_EXPERIENCE_CURRENT_FOR_LOAD));
+        }
     }
 
     private BigDecimal calculateTotalRate(ScoringDataDto request) {
@@ -113,29 +155,27 @@ public class CreditCalculationService {
         if (request.getIsInsuranceEnabled()){
             finalRate = finalRate.subtract(calculatorProperties.getInsuranceRateDiscount());
         }
-        log.info("Rate {}",finalRate);
+
         return finalRate;
     }
 
     private BigDecimal calculateMonthlyPayment(BigDecimal amount, Integer term, BigDecimal finalRate, Boolean getIsInsuranceEnabled) {
-        BigDecimal monthlyInterestRate = finalRate.divide(new BigDecimal(1200),5, RoundingMode.HALF_UP);
+        BigDecimal monthlyRate = finalRate
+                .divide(PERCENT_DIVISOR, CALC_SCALE, RoundingMode.HALF_UP)
+                .divide(MONTHS_IN_YEAR, CALC_SCALE, RoundingMode.HALF_UP);
 
-        BigDecimal onePlusRate = BigDecimal.ONE.add(monthlyInterestRate);
+        BigDecimal onePlusRate = BigDecimal.ONE.add(monthlyRate);
 
-        BigDecimal annuityRatio = monthlyInterestRate.multiply(onePlusRate.pow(term))
-                .divide(onePlusRate.pow(term).subtract(BigDecimal.ONE), 10, RoundingMode.HALF_UP);
+        BigDecimal annuityRatio = monthlyRate.multiply(onePlusRate.pow(term))
+                .divide(onePlusRate.pow(term).subtract(BigDecimal.ONE), CALC_SCALE, RoundingMode.HALF_UP);
 
-        BigDecimal monthlyPayment =amount.multiply(annuityRatio).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal monthlyPayment =amount.multiply(annuityRatio).setScale(RESULT_SCALE, RoundingMode.HALF_UP);
 
-        log.info("monthlyPayment without Insurance {}",monthlyPayment);
-
-        log.info("InsuranceCostPercent {}",calculatorProperties.getInsuranceCostPercent().divide(new BigDecimal(100),5, RoundingMode.HALF_UP));
         if (getIsInsuranceEnabled){
-            monthlyPayment = monthlyPayment.add(amount.multiply(calculatorProperties.getInsuranceCostPercent().divide(new BigDecimal(100),5, RoundingMode.HALF_UP))
-                    .divide(new BigDecimal(term),5, RoundingMode.HALF_UP));
+            monthlyPayment = monthlyPayment.add(amount.multiply(calculatorProperties.getInsuranceCostPercent().divide(PERCENT_DIVISOR,CALC_SCALE, RoundingMode.HALF_UP))
+                    .divide(new BigDecimal(term),CALC_SCALE, RoundingMode.HALF_UP));
         }
 
-        log.info("monthlyPayment with Insurance {}",monthlyPayment);
         return monthlyPayment;
     }
 
@@ -151,7 +191,9 @@ public class CreditCalculationService {
 
         List<PaymentScheduleElementDto> schedule = new ArrayList<>();
 
-        BigDecimal monthlyRate = rate.divide(new BigDecimal("1200"), 5, RoundingMode.HALF_UP);
+        BigDecimal monthlyRate = rate
+                .divide(PERCENT_DIVISOR, CALC_SCALE, RoundingMode.HALF_UP)
+                .divide(MONTHS_IN_YEAR, CALC_SCALE, RoundingMode.HALF_UP);
 
         BigDecimal remainingDebt = amount;
 
@@ -160,7 +202,7 @@ public class CreditCalculationService {
         for (int i = 1; i <= term; i++) {
             BigDecimal interestPayment = remainingDebt
                     .multiply(monthlyRate)
-                    .setScale(2, RoundingMode.HALF_UP);
+                    .setScale(RESULT_SCALE, RoundingMode.HALF_UP);
 
             BigDecimal principalPayment;
             BigDecimal totalPayment;
@@ -178,10 +220,10 @@ public class CreditCalculationService {
             PaymentScheduleElementDto element = PaymentScheduleElementDto.builder()
                     .number(i)
                     .date(paymentDate)
-                    .totalPayment(totalPayment.setScale(2, RoundingMode.HALF_UP))
-                    .principalPayment(principalPayment.setScale(2, RoundingMode.HALF_UP))
-                    .interestPayment(interestPayment.setScale(2, RoundingMode.HALF_UP))
-                    .remainingDebt(remainingDebt.setScale(2, RoundingMode.HALF_UP))
+                    .totalPayment(totalPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
+                    .principalPayment(principalPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
+                    .interestPayment(interestPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
+                    .remainingDebt(remainingDebt.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
                     .build();
 
             schedule.add(element);
