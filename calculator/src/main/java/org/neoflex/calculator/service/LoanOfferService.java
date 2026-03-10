@@ -93,6 +93,8 @@ public class LoanOfferService {
 
         return offers.stream()
                 .sorted(Comparator.comparing(LoanOfferDto::getRate).reversed())
+                .peek(offer -> log.info("Предложение: страховка = {}, зарплатный клиент = {}, процентная ставка = {}",
+                        offer.getIsInsuranceEnabled(),offer.getIsSalaryClient(),offer.getRate()))
                 .collect(Collectors.toList());
     }
 

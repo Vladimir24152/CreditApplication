@@ -88,7 +88,7 @@ public class CreditCalculationService {
      */
     public CreditDto calculateCredit(ScoringDataDto request) {
 
-        log.info("Получен запрос на расчет кредитных условий: сумма={}, срок={} мес, имя={}, фамилия={}",
+        log.info("Получен запрос на расчет кредитных условий: сумма = {}, срок = {} мес, имя = {}, фамилия = {}",
                 request.getAmount(), request.getTerm(), request.getFirstName(), request.getLastName());
 
         checkingTheLoanApplication(request);
@@ -122,7 +122,7 @@ public class CreditCalculationService {
                 .paymentSchedule(paymentSchedule)
                 .build();
 
-        log.info("Составлено кредитное предложение: сумма={}, ПСК={}, срок={} мес, процентная ставка={}",
+        log.info("Составлено кредитное предложение: сумма = {}, ПСК = {}, срок = {} мес, процентная ставка = {}",
                 creditDto.getAmount(),creditDto.getPsk(), creditDto.getTerm(), creditDto.getRate());
 
         return creditDto;
@@ -231,7 +231,7 @@ public class CreditCalculationService {
             finalRate = finalRate.subtract(calculatorProperties.getInsuranceRateDiscount());
         }
 
-        log.debug("Процентная ставка по кредиту расчитана в сумме={}",finalRate);
+        log.debug("Процентная ставка по кредиту расчитана в сумме = {}",finalRate);
         return finalRate;
     }
 
@@ -267,7 +267,7 @@ public class CreditCalculationService {
                     .divide(new BigDecimal(term),CALC_SCALE, RoundingMode.HALF_UP));
         }
 
-        log.debug("Аннуитетный платежа по кредиту={}",monthlyPayment);
+        log.debug("Аннуитетный платежа по кредиту = {}",monthlyPayment);
         return monthlyPayment;
     }
 
@@ -282,7 +282,7 @@ public class CreditCalculationService {
      */
     private BigDecimal calculatePsk(BigDecimal monthlyPayment, Integer term) {
         BigDecimal psk = monthlyPayment.multiply(new BigDecimal(term));
-        log.debug("Полная стоимость кредита={}",psk);
+        log.debug("Полная стоимость кредита = {}",psk);
         return psk;
     }
 
