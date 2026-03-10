@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
         );
     }
 
-    @ExceptionHandler({ScrollingFailed.class})
+    @ExceptionHandler({ScoringFailed.class})
     public ResponseEntity<HttpErrorResponse> handlerScrollingFailedErrorException(Exception e) {
         return buildErrorResponse(
                 HttpStatus.UNPROCESSABLE_ENTITY,

@@ -46,7 +46,7 @@ public class CalculatorController {
      * @param request DTO с полными данными для скоринга
      * @return рассчитанный кредит с графиком платежей
      */
-    @Operation(description = "валидация присланных данных, скоринг данных, полный расчет параметров кредита")
+    @Operation(description = "Валидация присланных данных, скоринг данных, полный расчет параметров кредита")
     @PostMapping(CALS_URL)
     private CreditDto calculateCredit(@Valid @RequestBody ScoringDataDto request){// <- Сделать валидацию в дто
         return creditCalculationService.calculateCredit(request);
