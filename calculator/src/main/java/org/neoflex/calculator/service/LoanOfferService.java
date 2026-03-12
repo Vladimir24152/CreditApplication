@@ -3,10 +3,8 @@ package org.neoflex.calculator.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.calculator.config.LoanCalculatorProperties;
-import org.neoflex.calculator.dto.CreditDto;
 import org.neoflex.calculator.dto.LoanOfferDto;
 import org.neoflex.calculator.dto.LoanStatementRequestDto;
-import org.neoflex.calculator.dto.ScoringDataDto;
 import org.neoflex.calculator.exception.NotValidBirthDateException;
 import org.springframework.stereotype.Service;
 
@@ -106,13 +104,13 @@ public class LoanOfferService {
      * @param isSalaryClient флаг зарплатного клиента
      * @return заполненный DTO кредитного предложения
      */
-    private LoanOfferDto createOffer(LoanStatementRequestDto request, boolean isInsuranceEnabled, boolean isSalaryClient) {
-
-        BigDecimal totalAmount = calculateTotalAmount(request,isInsuranceEnabled);
+    private LoanOfferDto createOffer(LoanStatementRequestDto request, Boolean isInsuranceEnabled, Boolean isSalaryClient) {
 
         BigDecimal rate = calculateRate(isInsuranceEnabled, isSalaryClient);
 
-        BigDecimal monthlyPayment = calculateMonthlyPayment(totalAmount, request.getTerm(), rate);
+        BigDecimal monthlyPayment = calculateMonthlyPayment(request.getAmount(), request.getTerm(), rate, isInsuranceEnabled);
+
+        BigDecimal totalAmount = calculateTotalAmount(monthlyPayment,request.getTerm());
 
         return LoanOfferDto.builder()
                 .statementId(UUID.randomUUID())
@@ -124,25 +122,6 @@ public class LoanOfferService {
                 .isInsuranceEnabled(isInsuranceEnabled)
                 .isSalaryClient(isSalaryClient)
                 .build();
-    }
-
-    /**
-     * Расчет итоговой суммы кредита с учетом страховки.
-     * <p>
-     * При наличии страховки к запрошенной сумме добавляется стоимость страховки,
-     * рассчитываемая как процент от запрошенной суммы.
-     *
-     * @param request базовые данные заявки
-     * @param isInsuranceEnabled флаг наличия страховки
-     * @return итоговая сумма кредита (с учетом страховки или без)
-     */
-    private BigDecimal calculateTotalAmount(LoanStatementRequestDto request, boolean isInsuranceEnabled) {
-        if (!isInsuranceEnabled) return request.getAmount();
-        BigDecimal insuranceCost = request.getAmount().multiply(calculatorProperties.getInsuranceCostPercent().divide(PERCENT_DIVISOR, CALC_SCALE, RoundingMode.HALF_UP));
-        BigDecimal totalAmount = request.getAmount().add(insuranceCost).setScale(RESULT_SCALE, RoundingMode.HALF_UP);
-
-        log.debug("Предварительная стоимость кредита с учетом страховки = {}", totalAmount);
-        return totalAmount;
     }
 
     /**
@@ -158,7 +137,7 @@ public class LoanOfferService {
      * @param isSalaryClient флаг зарплатного клиента
      * @return итоговая процентная ставка
      */
-    private BigDecimal calculateRate(boolean isInsuranceEnabled, boolean isSalaryClient) {
+    private BigDecimal calculateRate(Boolean isInsuranceEnabled, Boolean isSalaryClient) {
         BigDecimal rate = calculatorProperties.getBaseRate();
 
         if (isInsuranceEnabled) {
@@ -181,28 +160,51 @@ public class LoanOfferService {
      * <p>
      * Формула расчета:
      * Платеж = Сумма × (мес_ставка × (1 + мес_ставка)^срок) / ((1 + мес_ставка)^срок - 1)
+     * При страховании кредита, к платежу прибавляется сумма оплаты страховки
      *
-     * @param totalAmount итоговая сумма кредита
+     * @param amount итоговая сумма кредита
      * @param term срок кредита в месяцах
      * @param rate годовая процентная ставка
+     * @param isInsuranceEnabled флаг наличия страховки
      * @return сумма ежемесячного платежа
      */
-    private BigDecimal calculateMonthlyPayment(BigDecimal totalAmount, Integer term, BigDecimal rate) {
+    private BigDecimal calculateMonthlyPayment(BigDecimal amount, Integer term, BigDecimal rate, Boolean isInsuranceEnabled) {
 
-        BigDecimal monthlyInterestRate = rate
+        BigDecimal monthlyRate = rate
                 .divide(PERCENT_DIVISOR, CALC_SCALE, RoundingMode.HALF_UP)
                 .divide(MONTHS_IN_YEAR, CALC_SCALE, RoundingMode.HALF_UP);
 
-        BigDecimal onePlusRate = BigDecimal.ONE.add(monthlyInterestRate);
+        BigDecimal onePlusRate = BigDecimal.ONE.add(monthlyRate);
 
-        BigDecimal annuityRatio = monthlyInterestRate.multiply(onePlusRate.pow(term))
+        BigDecimal annuityRatio = monthlyRate.multiply(onePlusRate.pow(term))
                 .divide(onePlusRate.pow(term).subtract(BigDecimal.ONE), CALC_SCALE, RoundingMode.HALF_UP);
 
-        BigDecimal monthlyPayment = totalAmount.multiply(annuityRatio);
+        BigDecimal monthlyPayment = amount.multiply(annuityRatio);
+
+        if (isInsuranceEnabled) {
+            BigDecimal insurancePrice = amount.multiply(calculatorProperties.getInsuranceCostPercent().divide(PERCENT_DIVISOR, CALC_SCALE, RoundingMode.HALF_UP));
+            monthlyPayment = monthlyPayment.add(insurancePrice.divide(new BigDecimal(term),CALC_SCALE,RoundingMode.HALF_UP));
+        }
 
         log.debug("Предварительный расчет ежемесячного аннуитетного платежа = {} руб.", monthlyPayment);
 
         return monthlyPayment;
+    }
+
+    /**
+     * Расчет итоговой суммы кредита с учетом страховки.
+     * <p>
+     * Ежемесячный платеж умножается на количество запланированных платежей
+     *
+     * @param monthlyPayment сумма месячного платежа
+     * @param term срок кредита в месяцах/ количество планируемых платежей
+     * @return итоговая сумма кредита (с учетом страховки)
+     */
+    private BigDecimal calculateTotalAmount(BigDecimal monthlyPayment, Integer term) {
+        BigDecimal totalAmount = monthlyPayment.multiply(new BigDecimal(term)).setScale(CALC_SCALE, RoundingMode.HALF_UP);
+
+        log.debug("Предварительная стоимость кредита с учетом страховки = {}", totalAmount);
+        return totalAmount;
     }
 
     /**
