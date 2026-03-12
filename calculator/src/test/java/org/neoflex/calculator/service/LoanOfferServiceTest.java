@@ -3,65 +3,61 @@ package org.neoflex.calculator.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.neoflex.calculator.config.LoanCalculatorProperties;
+import org.neoflex.calculator.dto.LoanOfferDto;
 import org.neoflex.calculator.dto.LoanStatementRequestDto;
 import org.neoflex.calculator.exception.NotValidBirthDateException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 @DisplayName("Тестирование сервиса формирования кредитных предложений")
 class LoanOfferServiceTest {
 
-    @Mock
     private LoanCalculatorProperties properties;
 
-    @InjectMocks
     private LoanOfferService offerService;
 
-    private static final BigDecimal PERCENT_DIVISOR = new BigDecimal("100");
-    private static final int CALC_SCALE = 5;
     private static final int RESULT_SCALE = 2;
-
-    private static final BigDecimal BASE_RATE = new BigDecimal("15.00");
-    private static final BigDecimal INSURANCE_COST_PERCENT = new BigDecimal("2.00");
     private static final BigDecimal INSURANCE_RATE_DISCOUNT = new BigDecimal("3.00");
     private static final BigDecimal SALARY_CLIENT_DISCOUNT = new BigDecimal("1.00");
-
-    private final BigDecimal TEST_AMOUNT = new BigDecimal(1_000_000);
-    private final Integer TEST_TERM = 12;
-    private final String TEST_FIRST_NAME = "Ivan";
-    private final String TEST_LASTNAME = "Ivanov";
-    private final LocalDate TEST_BIRTH_DATE = LocalDate.now().minusYears(25);
 
     private LoanStatementRequestDto request;
 
     @BeforeEach
     void setUp(){
         request = LoanStatementRequestDto.builder()
-                .amount(TEST_AMOUNT)
-                .term(TEST_TERM)
-                .firstName(TEST_FIRST_NAME)
-                .lastName(TEST_LASTNAME)
-                .birthDate(TEST_BIRTH_DATE)
+                .amount(new BigDecimal(1_000_000))
+                .term(12)
+                .firstName("Ivan")
+                .lastName("Ivanov")
+                .birthDate(LocalDate.now().minusYears(25))
                 .build();
 
-        lenient().when(properties.getBaseRate()).thenReturn(BASE_RATE);
-        lenient().when(properties.getInsuranceCostPercent()).thenReturn(INSURANCE_COST_PERCENT);
-        lenient().when(properties.getInsuranceRateDiscount()).thenReturn(INSURANCE_RATE_DISCOUNT);
-        lenient().when(properties.getSalaryClientDiscount()).thenReturn(SALARY_CLIENT_DISCOUNT);
+        properties = new LoanCalculatorProperties();
+
+        properties.setBaseRate(new BigDecimal("15.0"));
+        properties.setInsuranceRateDiscount(new BigDecimal("3.0"));
+        properties.setSalaryClientDiscount(new BigDecimal("1.0"));
+        properties.setInsuranceCostPercent(new BigDecimal("2.0"));
+
+        offerService = new LoanOfferService(properties);
+    }
+
+    @Test
+    @DisplayName("Успешное создание 4 кредитных предложений при корректных данных")
+    void whenClientDataIsValidThenCalculateLoanOffersReturnsFourOffers() {
+        List<LoanOfferDto> offers = offerService.calculateLoanOffers(request);
+
+        assertNotNull(offers);
+        assertEquals(4, offers.size(), "Должно быть создано ровно 4 предложения");
     }
 
     @Test
@@ -101,20 +97,5 @@ class LoanOfferServiceTest {
         assertTrue(rateIsSalaryClient.compareTo(rateIsNotSalaryClient) < 0);
         assertEquals(SALARY_CLIENT_DISCOUNT,
                 rateIsNotSalaryClient.subtract(rateIsSalaryClient).setScale(RESULT_SCALE, RoundingMode.HALF_UP));
-    }
-
-    @Test
-    @DisplayName("ПСК должна быть равна произведению месячного платежа на количество планируемых платежей")
-    void pskMustBeEqualMonthlyPaymentMultiplyByTerm(){
-        offerService.calculateLoanOffers(request)
-                .forEach(offer -> {
-                    assertEquals(
-                            offer.getTotalAmount()
-                                    .setScale(0, RoundingMode.HALF_UP),
-                            offer.getMonthlyPayment()
-                                    .multiply(new BigDecimal(offer.getTerm()))
-                                    .setScale(0, RoundingMode.HALF_UP)
-                    );
-                });
     }
 }

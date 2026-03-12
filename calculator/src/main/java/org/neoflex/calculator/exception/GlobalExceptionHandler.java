@@ -14,13 +14,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({NotValidBirthDateException.class})
     public ResponseEntity<HttpErrorResponse> handlerInternalServerErrorException(Exception e) {
         return buildErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                HttpStatus.BAD_REQUEST,
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 e.getMessage()
         );
     }
 
-    @ExceptionHandler({ScoringFailed.class})
+    @ExceptionHandler({ScoringFailedException.class})
     public ResponseEntity<HttpErrorResponse> handlerScrollingFailedErrorException(Exception e) {
         return buildErrorResponse(
                 HttpStatus.UNPROCESSABLE_ENTITY,

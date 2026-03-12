@@ -1,6 +1,8 @@
 package org.neoflex.calculator.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.neoflex.calculator.dto.CreditDto;
@@ -16,39 +18,37 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static org.neoflex.calculator.constant.ApiConstant.CALS_URL;
-import static org.neoflex.calculator.constant.ApiConstant.OFFERS_URL;
-import static org.neoflex.calculator.constant.ApiConstant.CALCULATOR_URL;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(CALCULATOR_URL)
+@RequestMapping("/api/v1/calculator")
 public class CalculatorController {
 
     private final LoanOfferService loanOfferService;
 
     private final CreditCalculationService creditCalculationService;
 
-
-    /**
-     * Расчёт возможных условий кредита на основе предварительных данных
-     * @param request DTO с базовыми данными заявки
-     * @return список кредитных предложений (4 варианта: с/без страховки, с/без зарплатного клиента)
-     */
     @Operation(description = "Расчёт возможных условий кредита")
-    @PostMapping(OFFERS_URL)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Кредитные предложения успешно сформированы"),
+            @ApiResponse(responseCode = "400", description = "Ошибка валидации входных данных (неверный формат email, паспорта и т.д.)"),
+            @ApiResponse(responseCode = "422", description = "Ошибка скоринга - клиент не проходит по условиям (возраст, стаж, доход)"),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера")
+    })
+    @PostMapping("/offers")
     private List<LoanOfferDto> calculateLoanOffers(@Valid @RequestBody LoanStatementRequestDto request){
         return loanOfferService.calculateLoanOffers(request);
     }
 
-    /**
-     * Полный скоринг и расчет параметров кредита
-     * @param request DTO с полными данными для скоринга
-     * @return рассчитанный кредит с графиком платежей
-     */
     @Operation(description = "Валидация присланных данных, скоринг данных, полный расчет параметров кредита")
-    @PostMapping(CALS_URL)
-    private CreditDto calculateCredit(@Valid @RequestBody ScoringDataDto request){// <- Сделать валидацию в дто
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Кредит успешно рассчитан, возвращен график платежей"),
+            @ApiResponse(responseCode = "400", description = "Ошибка валидации входных данных (некорректная дата рождения, паспортные данные)"),
+            @ApiResponse(responseCode = "422", description = "Отказ в кредите по результатам скоринга (не трудоустроен, низкий доход, плохая кредитная история)"),
+            @ApiResponse(responseCode = "500", description = "Внутренняя ошибка сервера при обработке запроса")
+    })
+    @PostMapping("/calc")
+    private CreditDto calculateCredit(@Valid @RequestBody ScoringDataDto request){
         return creditCalculationService.calculateCredit(request);
     }
 }

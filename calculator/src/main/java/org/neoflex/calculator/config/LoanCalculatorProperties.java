@@ -21,9 +21,9 @@ public class LoanCalculatorProperties {
 
     private BigDecimal salaryClientDiscount;
 
-    private BigDecimal selfEmploeRateAdd;
+    private BigDecimal selfEmployRateAdd;
 
-    private BigDecimal businesOwnerRateAdd;
+    private BigDecimal businessOwnerRateAdd;
 
     private BigDecimal midManagerRateDiscount;
 
