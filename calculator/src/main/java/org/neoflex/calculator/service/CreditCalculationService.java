@@ -26,11 +26,6 @@ import static org.neoflex.calculator.enums.EmploymentStatus.UNEMPLOYED;
 public class CreditCalculationService {
 
     private static final BigDecimal PERCENT_DIVISOR = new BigDecimal("100");
-    private static final BigDecimal MAXIMUM_LOAN_AMOUNT_IN_SALARIES = new BigDecimal("24");
-    private static final int MAX_AGE_FOR_LOAD = 65;
-    private static final int MIN_AGE_FOR_LOAD = 20;
-    private static final int MIN_EXPERIENCE_TOTAL_FOR_LOAD = 18;
-    private static final int MIN_EXPERIENCE_CURRENT_FOR_LOAD = 3;
     private static final int CALC_SCALE = 5;
     private static final int RESULT_SCALE = 2;
 
@@ -40,8 +35,6 @@ public class CreditCalculationService {
 
         log.info("Получен запрос на расчет кредитных условий: сумма = {}, срок = {} мес, имя = {}, фамилия = {}",
                 request.getAmount(), request.getTerm(), request.getFirstName(), request.getLastName());
-
-        checkingTheLoanApplication(request);
 
         BigDecimal finalRate = calculateTotalRate(request);
 
@@ -76,40 +69,6 @@ public class CreditCalculationService {
                 creditDto.getAmount(),creditDto.getPsk(), creditDto.getTerm(), creditDto.getRate());
 
         return creditDto;
-    }
-
-    private void checkingTheLoanApplication(ScoringDataDto request) {
-
-        if (CalculateCreditUtil.isValidBirthDate(request.getBirthDate())){
-            throw new NotValidBirthDateException("Неверная дата рождения, Клиент должен быть совершеннолетним");
-        }
-
-        if (request.getEmployment().getEmploymentStatus().equals(UNEMPLOYED)){
-            throw new ScoringFailedException("Отказ в предоставлении займа не трудоустроенным");
-        }
-
-        if (request.getEmployment().getSalary().multiply(MAXIMUM_LOAN_AMOUNT_IN_SALARIES).compareTo(request.getAmount()) < 0){
-            throw new ScoringFailedException("Отказ в предоставлении займа превышающего среднемесячный доход более чем в "
-                    + MAXIMUM_LOAN_AMOUNT_IN_SALARIES + "раза(раз)");
-        }
-
-        int age = Period.between(request.getBirthDate(), LocalDate.now()).getYears();
-
-        if (age < MIN_AGE_FOR_LOAD){
-            throw new ScoringFailedException(String.format("Отказ в предоставлении займа клиентам младше %d лет",MIN_AGE_FOR_LOAD));
-        }
-
-        if (age > MAX_AGE_FOR_LOAD){
-            throw new ScoringFailedException(String.format("Отказ в предоставлении займа клиентам старше %d лет",MAX_AGE_FOR_LOAD));
-        }
-
-        if (request.getEmployment().getWorkExperienceTotal() < MIN_EXPERIENCE_TOTAL_FOR_LOAD){
-            throw new ScoringFailedException(String.format("Отказ в предоставлении займа клиентам с общим стажем работы менее %d месяцев",MIN_EXPERIENCE_TOTAL_FOR_LOAD));
-        }
-
-        if (request.getEmployment().getWorkExperienceCurrent() < MIN_EXPERIENCE_CURRENT_FOR_LOAD){
-            throw new ScoringFailedException(String.format("Отказ в предоставлении займа клиентам с текущем стажем работы менее %d месяцев",MIN_EXPERIENCE_CURRENT_FOR_LOAD));
-        }
     }
 
     private BigDecimal calculateTotalRate(ScoringDataDto request) {

@@ -11,8 +11,7 @@ import org.neoflex.calculator.enums.EmploymentStatus;
 import org.neoflex.calculator.enums.Gender;
 import org.neoflex.calculator.enums.MaritalStatus;
 import org.neoflex.calculator.enums.Position;
-import org.neoflex.calculator.exception.NotValidBirthDateException;
-import org.neoflex.calculator.exception.ScoringFailedException;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -90,50 +89,6 @@ class CreditCalculationServiceTest {
                 "График платежей должен содержать 12 записей");
     }
 
-    @Test
-    @DisplayName("Клиент младше 20 лет - выбрасывается исключение ScoringFailedException")
-    void whenTheClientIsUnder20YearsOfAgeThenThrowScoringFailedException() {
-        request.setBirthDate(LocalDate.now().minusYears(19));
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Клиент старше 65 лет - выбрасывается исключение ScoringFailedException")
-    void whenTheClientIsOver65YearsOfAgeThenThrowScoringFailedException() {
-        request.setBirthDate(LocalDate.now().minusYears(66));
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Клиент не трудоустроен - выбрасывается исключение ScoringFailedException")
-    void whenTheClientIsUnemployedThenThrowScoringFailedException() {
-        request.getEmployment().setEmploymentStatus(EmploymentStatus.UNEMPLOYED);
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Сумма кредита превышает 24 зарплаты - выбрасывается исключение ScoringFailedException")
-    void whenLoanAmountExceeds24SalariesThenThrowScoringFailedException() {
-        request.setAmount(request.getEmployment().getSalary().multiply(new BigDecimal(25)));
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Общий стаж менее 18 месяцев - выбрасывается исключение ScoringFailedException")
-    void whenTotalExperienceIsLessThan18MonthsThenThrowScoringFailedException() {
-        request.getEmployment().setWorkExperienceTotal(12);
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
 
     @Test
     @DisplayName("Общий стаж ровно 18 месяцев - исключение не выбрасывается")
@@ -141,24 +96,6 @@ class CreditCalculationServiceTest {
         request.getEmployment().setWorkExperienceTotal(18);
 
         assertDoesNotThrow(() -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Текущий стаж менее 3 месяцев - выбрасывается исключение ScoringFailedException")
-    void whenCurrentExperienceIsLessThan3MonthsThenThrowScoringFailedException() {
-        request.getEmployment().setWorkExperienceCurrent(2);
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Клиент младше 18 лет - выбрасывается исключение NotValidBirthDateException")
-    void whenTheClientIsUnder18YearsOfAgeThenThrowNotValidBirthDateException() {
-        request.setBirthDate(LocalDate.now().minusYears(17));
-
-        assertThrows(NotValidBirthDateException.class,
-                () -> creditCalculationService.calculateCredit(request));
     }
 
     @Test

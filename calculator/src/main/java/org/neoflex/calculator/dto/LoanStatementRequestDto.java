@@ -6,6 +6,8 @@ import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.neoflex.calculator.annotations.Adult;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -45,6 +47,7 @@ public class LoanStatementRequestDto {
     @Schema(description = "Email", example = "ivan@example.com")
     private String email;
 
+    @Adult
     @NotNull(message = "Дата рождения обязательна")
     @Past(message = "Дата рождения должна быть в прошлом")
     @JsonFormat(pattern = "yyyy-MM-dd")
