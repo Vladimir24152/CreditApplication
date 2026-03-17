@@ -43,7 +43,7 @@ class CreditCalculationServiceTest {
         properties.setDivorcedRateAdd(new BigDecimal("1.0"));
         properties.setNotBinaryRateAdd(new BigDecimal("7.0"));
 
-        creditCalculationService = new CreditCalculationService(properties);
+        creditCalculationService = new CreditCalculationService(properties, new CreditCalculator());
 
         employment = EmploymentDto.builder()
                 .employmentStatus(EmploymentStatus.EMPLOYED)
@@ -141,7 +141,7 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = selfEmployedCredit.getRate().subtract(employedCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getSelfEmployRateAdd()) == 0);
+        assertEquals(0,difference.compareTo(properties.getSelfEmployRateAdd()));
     }
 
     @Test
@@ -155,7 +155,7 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = businessOwnerCredit.getRate().subtract(employedCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getBusinessOwnerRateAdd()) == 0);
+        assertEquals(0, difference.compareTo(properties.getBusinessOwnerRateAdd()));
     }
 
     @Test
@@ -169,7 +169,7 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(topManagerCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getTopManagerRateDiscount()) == 0);
+        assertEquals(0,difference.compareTo(properties.getTopManagerRateDiscount()));
     }
 
     @Test
@@ -183,7 +183,7 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(midManagerCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getMidManagerRateDiscount()) == 0);
+        assertEquals(0, difference.compareTo(properties.getMidManagerRateDiscount()));
     }
 
     @Test
@@ -197,7 +197,7 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(marriedCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getMarriedRateDiscount()) == 0);
+        assertEquals(0,difference.compareTo(properties.getMarriedRateDiscount()));
     }
 
     @Test
@@ -211,7 +211,7 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = divorcedCredit.getRate().subtract(credit.getRate());
 
-        assertTrue(difference.compareTo(properties.getDivorcedRateAdd()) == 0);
+        assertEquals(0, difference.compareTo(properties.getDivorcedRateAdd()));
     }
 
     @Test
@@ -227,7 +227,7 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(maleCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getMaleRateDiscount()) == 0);
+        assertEquals(0, difference.compareTo(properties.getMaleRateDiscount()));
     }
 
     @Test
@@ -243,7 +243,7 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(maleCredit.getRate());
 
-        assertTrue(difference.compareTo(BigDecimal.ZERO) == 0);
+        assertEquals(0, difference.compareTo(BigDecimal.ZERO));
     }
 
     @Test
@@ -259,7 +259,7 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(maleCredit.getRate());
 
-        assertTrue(difference.compareTo(BigDecimal.ZERO) == 0);
+        assertEquals(0, difference.compareTo(BigDecimal.ZERO));
     }
 
     @Test
@@ -274,6 +274,6 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = notBinaryCredit.getRate().subtract(credit.getRate());
 
-        assertTrue(difference.compareTo(properties.getNotBinaryRateAdd()) == 0);
+        assertEquals(0, difference.compareTo(properties.getNotBinaryRateAdd()));
     }
 }

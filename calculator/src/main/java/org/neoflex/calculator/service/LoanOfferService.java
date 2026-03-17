@@ -3,9 +3,8 @@ package org.neoflex.calculator.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.calculator.config.LoanCalculatorProperties;
-import org.neoflex.calculator.dto.response.LoanOfferDto;
 import org.neoflex.calculator.dto.LoanStatementRequestDto;
-import org.neoflex.calculator.util.CalculateCreditUtil;
+import org.neoflex.calculator.dto.response.LoanOfferDto;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.neoflex.calculator.util.CalculateCreditUtil.PERCENT_DIVISOR;
+import static org.neoflex.calculator.service.CreditCalculator.PERCENT_DIVISOR;
 
 @Slf4j
 @Service
@@ -27,6 +26,8 @@ public class LoanOfferService {
     private static final int RESULT_SCALE = 2;
 
     private final LoanCalculatorProperties calculatorProperties;
+
+    private final CreditCalculator creditCalculator;
 
     public List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto request){
 
@@ -103,7 +104,7 @@ public class LoanOfferService {
 
     private BigDecimal calculateMonthlyPayment(BigDecimal amount, Integer term, BigDecimal rate, Boolean isInsuranceEnabled) {
 
-        BigDecimal monthlyPayment =CalculateCreditUtil.calculateMonthlyPayment(amount,term,rate);
+        BigDecimal monthlyPayment = creditCalculator.calculateMonthlyPayment(amount,term,rate);
 
         if (isInsuranceEnabled){
             monthlyPayment = monthlyPayment.add(amount.multiply(calculatorProperties.getInsuranceCostPercent()

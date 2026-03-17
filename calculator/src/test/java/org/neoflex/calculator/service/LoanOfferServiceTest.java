@@ -47,7 +47,7 @@ class LoanOfferServiceTest {
         properties.setSalaryClientDiscount(new BigDecimal("1.0"));
         properties.setInsuranceCostPercent(new BigDecimal("2.0"));
 
-        offerService = new LoanOfferService(properties);
+        offerService = new LoanOfferService(properties,new CreditCalculator());
     }
 
     @Test

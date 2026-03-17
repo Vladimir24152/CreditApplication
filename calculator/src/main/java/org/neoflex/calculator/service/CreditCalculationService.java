@@ -3,10 +3,9 @@ package org.neoflex.calculator.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.calculator.config.LoanCalculatorProperties;
+import org.neoflex.calculator.dto.ScoringDataDto;
 import org.neoflex.calculator.dto.response.CreditDto;
 import org.neoflex.calculator.dto.response.PaymentScheduleElementDto;
-import org.neoflex.calculator.dto.ScoringDataDto;
-import org.neoflex.calculator.util.CalculateCreditUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -26,6 +25,8 @@ public class CreditCalculationService {
     private static final int RESULT_SCALE = 2;
 
     private final LoanCalculatorProperties calculatorProperties;
+
+    private final CreditCalculator creditCalculator;
 
     public CreditDto calculateCredit(ScoringDataDto request) {
 
@@ -125,7 +126,7 @@ public class CreditCalculationService {
 
     private BigDecimal calculateMonthlyPayment(BigDecimal amount, Integer term, BigDecimal finalRate, Boolean isInsuranceEnabled) {
 
-        BigDecimal monthlyPayment =CalculateCreditUtil.calculateMonthlyPayment(amount,term,finalRate);
+        BigDecimal monthlyPayment = creditCalculator.calculateMonthlyPayment(amount,term,finalRate);
 
         if (isInsuranceEnabled == null) {
             throw new NullPointerException("Отсутствует информация о страховке");
@@ -149,7 +150,7 @@ public class CreditCalculationService {
 
         List<PaymentScheduleElementDto> schedule = new ArrayList<>();
 
-        BigDecimal monthlyRate = CalculateCreditUtil.calculateMonthlyRate(rate);
+        BigDecimal monthlyRate = creditCalculator.calculateMonthlyRate(rate);
 
         BigDecimal remainingDebt = amount;
 
