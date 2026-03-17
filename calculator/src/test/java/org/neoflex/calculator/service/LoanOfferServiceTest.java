@@ -4,9 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.neoflex.calculator.config.LoanCalculatorProperties;
-import org.neoflex.calculator.dto.LoanOfferDto;
+import org.neoflex.calculator.dto.response.LoanOfferDto;
 import org.neoflex.calculator.dto.LoanStatementRequestDto;
-import org.neoflex.calculator.exception.NotValidBirthDateException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -58,13 +57,6 @@ class LoanOfferServiceTest {
 
         assertNotNull(offers);
         assertEquals(4, offers.size(), "Должно быть создано ровно 4 предложения");
-    }
-
-    @Test
-    @DisplayName("Если возраст клиента меньше 18 лет - должен выбросить NotValidBirthDateException")
-    void whenTheClientIsUnder18YearsOfAgeThenTrowNotValidBirthDateException(){
-        request.setBirthDate(LocalDate.now().minusYears(15));
-        assertThrows(NotValidBirthDateException.class,() -> offerService.calculateLoanOffers(request));
     }
 
     @Test

@@ -47,7 +47,7 @@ public class LoanStatementRequestDto {
     @Schema(description = "Email", example = "ivan@example.com")
     private String email;
 
-    @Adult
+    @Adult(message = "Клиент должен быть совершеннолетним")
     @NotNull(message = "Дата рождения обязательна")
     @Past(message = "Дата рождения должна быть в прошлом")
     @JsonFormat(pattern = "yyyy-MM-dd")

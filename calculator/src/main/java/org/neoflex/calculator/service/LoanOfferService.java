@@ -3,9 +3,8 @@ package org.neoflex.calculator.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.calculator.config.LoanCalculatorProperties;
-import org.neoflex.calculator.dto.LoanOfferDto;
+import org.neoflex.calculator.dto.response.LoanOfferDto;
 import org.neoflex.calculator.dto.LoanStatementRequestDto;
-import org.neoflex.calculator.exception.NotValidBirthDateException;
 import org.neoflex.calculator.util.CalculateCreditUtil;
 import org.springframework.stereotype.Service;
 
@@ -31,12 +30,12 @@ public class LoanOfferService {
 
     public List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto request){
 
+        if (request == null) {
+            throw new NullPointerException("Отсутствует тело запроса");
+        }
+
         log.info("Получен запрос на расчет кредитных предложений: сумма={}, срок={} мес, имя={}, фамилия={}",
                 request.getAmount(), request.getTerm(), request.getFirstName(), request.getLastName());
-
-        if (CalculateCreditUtil.isValidBirthDate(request.getBirthDate())){
-            throw new NotValidBirthDateException("Неверная дата рождения, Клиент должен быть совершеннолетним");
-        }
 
         List<LoanOfferDto> offers = new ArrayList<>();
 
@@ -79,8 +78,16 @@ public class LoanOfferService {
     private BigDecimal calculateRate(Boolean isInsuranceEnabled, Boolean isSalaryClient) {
         BigDecimal rate = calculatorProperties.getBaseRate();
 
+        if (isInsuranceEnabled == null) {
+            throw new NullPointerException("Отсутствует информация о страховке");
+        }
+
         if (isInsuranceEnabled) {
             rate = rate.subtract(calculatorProperties.getInsuranceRateDiscount());
+        }
+
+        if (isSalaryClient == null) {
+            throw new NullPointerException("Отсутствует информация о заработной плате");
         }
 
         if (isSalaryClient) {

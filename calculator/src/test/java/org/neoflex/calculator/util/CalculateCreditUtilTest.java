@@ -11,15 +11,15 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Тесты утилиты CalculateCreditUtil")
 class CalculateCreditUtilTest {
 
-    private final BigDecimal RATE = new BigDecimal("12");
-    private final BigDecimal MAXIMAL_ERRANCY = new BigDecimal("0.10");
+    private final BigDecimal rate = new BigDecimal("12");
+    private final BigDecimal maximalErrancy = new BigDecimal("0.10");
 
     @Test
     @DisplayName("Успешный расчет ежемесячной ставки при корректной годовой ставке")
     void whenAnnualRateIsValidThenCalculateMonthlyRateReturnsCorrectValue() {
         BigDecimal expected = new BigDecimal("0.01");
 
-        BigDecimal result = CalculateCreditUtil.calculateMonthlyRate(RATE);
+        BigDecimal result = CalculateCreditUtil.calculateMonthlyRate(rate);
 
         assertEquals(0, expected.compareTo(result),
                 "Ежемесячная ставка должна быть 0.01 (12%/12/100)");
@@ -42,12 +42,12 @@ class CalculateCreditUtilTest {
     @DisplayName("Успешный расчет ежемесячного аннуитетного платежа")
     void whenAmountTermAndRateAreValidThenCalculateMonthlyPaymentReturnsCorrectValue() {
 
-        BigDecimal result = CalculateCreditUtil.calculateMonthlyPayment(new BigDecimal("1000000"), 12, RATE);
+        BigDecimal result = CalculateCreditUtil.calculateMonthlyPayment(new BigDecimal("1000000"), 12, rate);
 
         BigDecimal expected = new BigDecimal("88848.89");
 
 
-        assertTrue(expected.subtract(result).compareTo(MAXIMAL_ERRANCY) <= 0,
+        assertTrue(expected.subtract(result).compareTo(maximalErrancy) <= 0,
                 String.format("Ожидаемый платеж: %s, Фактический: %s", expected, result));
     }
 

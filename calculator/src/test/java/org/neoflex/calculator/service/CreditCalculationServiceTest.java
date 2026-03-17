@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.neoflex.calculator.config.LoanCalculatorProperties;
-import org.neoflex.calculator.dto.CreditDto;
+import org.neoflex.calculator.dto.response.CreditDto;
 import org.neoflex.calculator.dto.EmploymentDto;
 import org.neoflex.calculator.dto.ScoringDataDto;
 import org.neoflex.calculator.enums.EmploymentStatus;

@@ -3,11 +3,9 @@ package org.neoflex.calculator.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.calculator.config.LoanCalculatorProperties;
-import org.neoflex.calculator.dto.CreditDto;
-import org.neoflex.calculator.dto.PaymentScheduleElementDto;
+import org.neoflex.calculator.dto.response.CreditDto;
+import org.neoflex.calculator.dto.response.PaymentScheduleElementDto;
 import org.neoflex.calculator.dto.ScoringDataDto;
-import org.neoflex.calculator.exception.NotValidBirthDateException;
-import org.neoflex.calculator.exception.ScoringFailedException;
 import org.neoflex.calculator.util.CalculateCreditUtil;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +15,6 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.neoflex.calculator.enums.EmploymentStatus.UNEMPLOYED;
 
 @Service
 @Slf4j
@@ -33,6 +29,10 @@ public class CreditCalculationService {
 
     public CreditDto calculateCredit(ScoringDataDto request) {
 
+        if (request == null) {
+            throw new NullPointerException("Отсутствует тело запроса");
+        }
+
         log.info("Получен запрос на расчет кредитных условий: сумма = {}, срок = {} мес, имя = {}, фамилия = {}",
                 request.getAmount(), request.getTerm(), request.getFirstName(), request.getLastName());
 
@@ -45,7 +45,7 @@ public class CreditCalculationService {
                 request.getIsInsuranceEnabled()
         );
 
-        BigDecimal psk = CalculateCreditUtil.calculatePsk(monthlyPayment, request.getTerm());
+        BigDecimal psk = calculatePsk(monthlyPayment, request.getTerm());
 
         List<PaymentScheduleElementDto> paymentSchedule = calculatePaymentSchedule(
                 request.getAmount(),
@@ -111,6 +111,10 @@ public class CreditCalculationService {
                 break;
         }
 
+        if (request.getIsInsuranceEnabled() == null) {
+            throw new NullPointerException("Отсутствует информация о страховке");
+        }
+
         if (request.getIsInsuranceEnabled()){
             finalRate = finalRate.subtract(calculatorProperties.getInsuranceRateDiscount());
         }
@@ -122,6 +126,10 @@ public class CreditCalculationService {
     private BigDecimal calculateMonthlyPayment(BigDecimal amount, Integer term, BigDecimal finalRate, Boolean isInsuranceEnabled) {
 
         BigDecimal monthlyPayment =CalculateCreditUtil.calculateMonthlyPayment(amount,term,finalRate);
+
+        if (isInsuranceEnabled == null) {
+            throw new NullPointerException("Отсутствует информация о страховке");
+        }
 
         if (isInsuranceEnabled){
             monthlyPayment = monthlyPayment.add(amount.multiply(calculatorProperties.getInsuranceCostPercent()
@@ -180,5 +188,9 @@ public class CreditCalculationService {
         }
 
         return schedule;
+    }
+
+    private static BigDecimal calculatePsk(BigDecimal monthlyPayment, Integer term) {
+        return monthlyPayment.multiply(new BigDecimal(term));
     }
 }

@@ -17,7 +17,7 @@ public class AdultValidator implements ConstraintValidator<Adult, LocalDate> {
         if (LocalDate.now().minusYears(18).isBefore(value)) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate(
-                    "Неверная дата рождения, Клиент должен быть совершеннолетним"
+                    "Отказ в займе - Неверная дата рождения, Клиент должен быть совершеннолетним"
             ).addConstraintViolation();
             return false;
         }

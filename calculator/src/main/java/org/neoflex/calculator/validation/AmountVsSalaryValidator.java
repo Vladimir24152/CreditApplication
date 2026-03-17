@@ -36,7 +36,7 @@ public class AmountVsSalaryValidator implements
         if (amount.compareTo(maxAllowedAmount) > 0) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate(
-                    String.format("Сумма кредита не должна превышать зарплату более чем в %d раз",
+                    String.format("Отказ в займе - сумма кредита не должна превышать зарплату более чем в %d раз",
                             times)
             ).addPropertyNode("amount").addConstraintViolation();
             return false;

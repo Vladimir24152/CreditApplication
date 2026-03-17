@@ -16,7 +16,7 @@ public class NotUnemployedValidator implements ConstraintValidator<NotUnemployed
         if (EmploymentStatus.UNEMPLOYED.equals(value)) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate(
-                    "Клиент не трудоустроен"
+                    "Отказ в займе не трудоустроенным клиентам"
             ).addConstraintViolation();
             return false;
         }
