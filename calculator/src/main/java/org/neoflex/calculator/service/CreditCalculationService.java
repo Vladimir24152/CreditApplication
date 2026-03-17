@@ -2,7 +2,7 @@ package org.neoflex.calculator.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.calculator.config.LoanCalculatorProperties;
+import org.neoflex.calculator.constants.LoanCalculatorConstants;
 import org.neoflex.calculator.dto.ScoringDataDto;
 import org.neoflex.calculator.dto.response.CreditDto;
 import org.neoflex.calculator.dto.response.PaymentScheduleElementDto;
@@ -19,12 +19,6 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class CreditCalculationService {
-
-    private static final BigDecimal PERCENT_DIVISOR = new BigDecimal("100");
-    private static final int CALC_SCALE = 5;
-    private static final int RESULT_SCALE = 2;
-
-    private final LoanCalculatorProperties calculatorProperties;
 
     private final CreditCalculator creditCalculator;
 
@@ -56,11 +50,11 @@ public class CreditCalculationService {
         );
 
         CreditDto creditDto = CreditDto.builder()
-                .amount(request.getAmount().setScale(RESULT_SCALE, RoundingMode.HALF_UP))
+                .amount(request.getAmount().setScale(CreditCalculator.RESULT_SCALE, RoundingMode.HALF_UP))
                 .term(request.getTerm())
-                .monthlyPayment(monthlyPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
-                .rate(finalRate.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
-                .psk(psk.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
+                .monthlyPayment(monthlyPayment.setScale(CreditCalculator.RESULT_SCALE, RoundingMode.HALF_UP))
+                .rate(finalRate.setScale(CreditCalculator.RESULT_SCALE, RoundingMode.HALF_UP))
+                .psk(psk.setScale(CreditCalculator.RESULT_SCALE, RoundingMode.HALF_UP))
                 .isInsuranceEnabled(request.getIsInsuranceEnabled())
                 .isSalaryClient(request.getIsSalaryClient())
                 .paymentSchedule(paymentSchedule)
@@ -74,23 +68,23 @@ public class CreditCalculationService {
 
     private BigDecimal calculateTotalRate(ScoringDataDto request) {
 
-        BigDecimal finalRate = calculatorProperties.getBaseRate();
+        BigDecimal finalRate = LoanCalculatorConstants.BASE_RATE;
 
         finalRate = switch (request.getEmployment().getEmploymentStatus()) {
-            case SELF_EMPLOYED -> finalRate.add(calculatorProperties.getSelfEmployRateAdd());
-            case BUSINESS_OWNER -> finalRate.add(calculatorProperties.getBusinessOwnerRateAdd());
+            case SELF_EMPLOYED -> finalRate.add(LoanCalculatorConstants.SELF_EMPLOY_RATE_ADD);
+            case BUSINESS_OWNER -> finalRate.add(LoanCalculatorConstants.BUSINESS_OWNER_RATE_ADD);
             default -> finalRate;
         };
 
         finalRate = switch (request.getEmployment().getPosition()) {
-            case MID_MANAGER -> finalRate.subtract(calculatorProperties.getMidManagerRateDiscount());
-            case TOP_MANAGER -> finalRate.subtract(calculatorProperties.getTopManagerRateDiscount());
+            case MID_MANAGER -> finalRate.subtract(LoanCalculatorConstants.MID_MANAGER_RATE_DISCOUNT);
+            case TOP_MANAGER -> finalRate.subtract(LoanCalculatorConstants.TOP_MANAGER_RATE_DISCOUNT);
             default -> finalRate;
         };
 
         finalRate = switch (request.getMaritalStatus()) {
-            case MARRIED -> finalRate.subtract(calculatorProperties.getMarriedRateDiscount());
-            case DIVORCED -> finalRate.add(calculatorProperties.getDivorcedRateAdd());
+            case MARRIED -> finalRate.subtract(LoanCalculatorConstants.MARRIED_RATE_DISCOUNT);
+            case DIVORCED -> finalRate.add(LoanCalculatorConstants.DIVORCED_RATE_ADD);
             default -> finalRate;
         };
 
@@ -99,16 +93,16 @@ public class CreditCalculationService {
         switch (request.getGender()){
             case MALE:
                 if (age >= 30 && age <= 55) {
-                    finalRate = finalRate.subtract(calculatorProperties.getMaleRateDiscount());
+                    finalRate = finalRate.subtract(LoanCalculatorConstants.MALE_RATE_DISCOUNT);
                 }
                 break;
             case FEMALE:
                 if (age >= 32 && age <= 60) {
-                    finalRate = finalRate.subtract(calculatorProperties.getFemaleRateDiscount());
+                    finalRate = finalRate.subtract(LoanCalculatorConstants.FEMALE_RATE_DISCOUNT);
                 }
                 break;
             case NOT_BINARY:
-                finalRate = finalRate.add(calculatorProperties.getNotBinaryRateAdd());
+                finalRate = finalRate.add(LoanCalculatorConstants.NOT_BINARY_RATE_ADD);
                 break;
         }
 
@@ -117,7 +111,7 @@ public class CreditCalculationService {
         }
 
         if (request.getIsInsuranceEnabled()){
-            finalRate = finalRate.subtract(calculatorProperties.getInsuranceRateDiscount());
+            finalRate = finalRate.subtract(LoanCalculatorConstants.INSURANCE_RATE_DISCOUNT);
         }
 
         log.debug("Процентная ставка по кредиту расчитана в сумме = {}",finalRate);
@@ -126,16 +120,18 @@ public class CreditCalculationService {
 
     private BigDecimal calculateMonthlyPayment(BigDecimal amount, Integer term, BigDecimal finalRate, Boolean isInsuranceEnabled) {
 
+        System.out.println(amount + ", " + term + ", " + finalRate);
         BigDecimal monthlyPayment = creditCalculator.calculateMonthlyPayment(amount,term,finalRate);
+        System.out.println(monthlyPayment);
 
         if (isInsuranceEnabled == null) {
             throw new NullPointerException("Отсутствует информация о страховке");
         }
 
         if (isInsuranceEnabled){
-            monthlyPayment = monthlyPayment.add(amount.multiply(calculatorProperties.getInsuranceCostPercent()
-                            .divide(PERCENT_DIVISOR,CALC_SCALE, RoundingMode.HALF_UP))
-                    .divide(new BigDecimal(term),CALC_SCALE, RoundingMode.HALF_UP));
+            monthlyPayment = monthlyPayment.add(amount.multiply(LoanCalculatorConstants.INSURANCE_COST_PERCENT
+                            .divide(CreditCalculator.PERCENT_DIVISOR,CreditCalculator.CALC_SCALE, RoundingMode.HALF_UP))
+                    .divide(new BigDecimal(term),CreditCalculator.CALC_SCALE, RoundingMode.HALF_UP));
         }
 
         log.debug("Аннуитетный платеж по кредиту = {}",monthlyPayment);
@@ -159,7 +155,7 @@ public class CreditCalculationService {
         for (int i = 1; i <= term; i++) {
             BigDecimal interestPayment = remainingDebt
                     .multiply(monthlyRate)
-                    .setScale(RESULT_SCALE, RoundingMode.HALF_UP);
+                    .setScale(CreditCalculator.RESULT_SCALE, RoundingMode.HALF_UP);
 
             BigDecimal principalPayment;
             BigDecimal totalPayment;
@@ -177,10 +173,10 @@ public class CreditCalculationService {
             PaymentScheduleElementDto element = PaymentScheduleElementDto.builder()
                     .number(i)
                     .date(paymentDate)
-                    .totalPayment(totalPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
-                    .principalPayment(principalPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
-                    .interestPayment(interestPayment.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
-                    .remainingDebt(remainingDebt.setScale(RESULT_SCALE, RoundingMode.HALF_UP))
+                    .totalPayment(totalPayment.setScale(CreditCalculator.RESULT_SCALE, RoundingMode.HALF_UP))
+                    .principalPayment(principalPayment.setScale(CreditCalculator.RESULT_SCALE, RoundingMode.HALF_UP))
+                    .interestPayment(interestPayment.setScale(CreditCalculator.RESULT_SCALE, RoundingMode.HALF_UP))
+                    .remainingDebt(remainingDebt.setScale(CreditCalculator.RESULT_SCALE, RoundingMode.HALF_UP))
                     .build();
 
             schedule.add(element);

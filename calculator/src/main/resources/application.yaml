@@ -11,19 +11,3 @@ springdoc:
 logging:
   level:
     org.springdoc: DEBUG
-
-loan:
-  calculator:
-    base-rate: 15.0
-    insurance-cost-percent: 2.0
-    insurance-rate-discount: 3.0
-    salary-client-discount: 1.0
-    self-employ-rate-add: 2.0
-    business-owner-rate-add: 1.0
-    mid-manager-rate-discount: 2.0
-    top-manager-rate-discount: 3.0
-    married-rate-discount: 3.0
-    divorced-rate-add: 1.0
-    male-rate-discount: 3.0
-    female-rate-discount: 3.0
-    not-binary-rate-add: 7.0

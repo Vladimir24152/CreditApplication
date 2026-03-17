@@ -3,9 +3,15 @@ package org.neoflex.calculator.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.neoflex.calculator.config.LoanCalculatorProperties;
-import org.neoflex.calculator.dto.response.LoanOfferDto;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.neoflex.calculator.constants.LoanCalculatorConstants;
 import org.neoflex.calculator.dto.LoanStatementRequestDto;
+import org.neoflex.calculator.dto.response.LoanOfferDto;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -16,38 +22,43 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Тестирование сервиса формирования кредитных предложений")
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class LoanOfferServiceTest {
 
-    private LoanCalculatorProperties properties;
+    @Mock
+    private CreditCalculator creditCalculator;
 
+    @InjectMocks
     private LoanOfferService offerService;
 
-    private static final int RESULT_SCALE = 2;
-    private static final BigDecimal INSURANCE_RATE_DISCOUNT = new BigDecimal("3.00");
-    private static final BigDecimal SALARY_CLIENT_DISCOUNT = new BigDecimal("1.00");
+    private static final BigDecimal EXPECTED_AMOUNT = new BigDecimal("1000000");
+    private static final int EXPECTED_TERM = 12;
 
     private LoanStatementRequestDto request;
 
     @BeforeEach
     void setUp(){
         request = LoanStatementRequestDto.builder()
-                .amount(new BigDecimal(1_000_000))
-                .term(12)
+                .amount(EXPECTED_AMOUNT)
+                .term(EXPECTED_TERM)
                 .firstName("Ivan")
                 .lastName("Ivanov")
                 .birthDate(LocalDate.now().minusYears(25))
                 .build();
 
-        properties = new LoanCalculatorProperties();
 
-        properties.setBaseRate(new BigDecimal("15.0"));
-        properties.setInsuranceRateDiscount(new BigDecimal("3.0"));
-        properties.setSalaryClientDiscount(new BigDecimal("1.0"));
-        properties.setInsuranceCostPercent(new BigDecimal("2.0"));
+        when(creditCalculator.calculateMonthlyPayment(any(), anyInt(), any()))
+                .thenReturn(new BigDecimal("90258.31"));
 
-        offerService = new LoanOfferService(properties,new CreditCalculator());
     }
 
     @Test
@@ -57,6 +68,11 @@ class LoanOfferServiceTest {
 
         assertNotNull(offers);
         assertEquals(4, offers.size(), "Должно быть создано ровно 4 предложения");
+        verify(creditCalculator, times(4)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(EXPECTED_TERM),
+                any(BigDecimal.class)
+        );
     }
 
     @Test
@@ -71,8 +87,14 @@ class LoanOfferServiceTest {
                 .findFirst().get().getRate();
 
         assertTrue(rateIsInsuranceClient.compareTo(rateIsNotInsuranceClient) < 0);
-        assertEquals(INSURANCE_RATE_DISCOUNT,
-                rateIsNotInsuranceClient.subtract(rateIsInsuranceClient).setScale(RESULT_SCALE, RoundingMode.HALF_UP));
+        assertEquals(LoanCalculatorConstants.INSURANCE_RATE_DISCOUNT,
+                rateIsNotInsuranceClient.subtract(rateIsInsuranceClient).setScale(1, RoundingMode.HALF_UP));
+
+        verify(creditCalculator, times(8)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(EXPECTED_TERM),
+                any(BigDecimal.class)
+        );
     }
 
     @Test
@@ -87,7 +109,21 @@ class LoanOfferServiceTest {
                 .findFirst().get().getRate();
 
         assertTrue(rateIsSalaryClient.compareTo(rateIsNotSalaryClient) < 0);
-        assertEquals(SALARY_CLIENT_DISCOUNT,
-                rateIsNotSalaryClient.subtract(rateIsSalaryClient).setScale(RESULT_SCALE, RoundingMode.HALF_UP));
+        assertEquals(LoanCalculatorConstants.SALARY_CLIENT_DISCOUNT,
+                rateIsNotSalaryClient.subtract(rateIsSalaryClient).setScale(1, RoundingMode.HALF_UP));
+
+        verify(creditCalculator, times(8)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(EXPECTED_TERM),
+                any(BigDecimal.class)
+        );
+    }
+
+    @Test
+    @DisplayName("Должен бросить NPE если request == null")
+    void whenRequestIsNullThenReturnNPE() {
+        request = null;
+
+        assertThrows(NullPointerException.class,() -> offerService.calculateLoanOffers(request));
     }
 }
