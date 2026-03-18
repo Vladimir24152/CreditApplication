@@ -10,7 +10,7 @@ public class NotUnemployedValidator implements ConstraintValidator<NotUnemployed
     @Override
     public boolean isValid(EmploymentStatus value, ConstraintValidatorContext context) {
         if (value == null) {
-            return false;
+            return true;
         }
 
         if (EmploymentStatus.UNEMPLOYED.equals(value)) {
