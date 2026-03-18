@@ -74,16 +74,8 @@ public class LoanOfferService {
     private BigDecimal calculateRate(Boolean isInsuranceEnabled, Boolean isSalaryClient) {
         BigDecimal rate = LoanCalculatorConstants.BASE_RATE;
 
-        if (isInsuranceEnabled == null) {
-            throw new NullPointerException("Отсутствует информация о страховке");
-        }
-
         if (isInsuranceEnabled) {
             rate = rate.subtract(LoanCalculatorConstants.INSURANCE_RATE_DISCOUNT);
-        }
-
-        if (isSalaryClient == null) {
-            throw new NullPointerException("Отсутствует информация о заработной плате");
         }
 
         if (isSalaryClient) {

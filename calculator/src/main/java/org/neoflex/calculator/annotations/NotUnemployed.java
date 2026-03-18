@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface NotUnemployed {
-    String message() default "Клиент не трудоустроен";
+    String message() default "Отказ в займе не трудоустроенным клиентам";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

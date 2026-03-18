@@ -24,20 +24,10 @@ public class AgeRangeValidator  implements ConstraintValidator<AgeRange, LocalDa
         }
 
         if (LocalDate.now().minusYears(minAge).isBefore(value)) {
-            context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(String.format(
-                    "Отказ в займе клиентам младше %d лет"
-                    ,minAge)
-            ).addConstraintViolation();
             return false;
         }
 
         if (!LocalDate.now().minusYears(maxAge).isBefore(value)) {
-            context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(String.format(
-                    "Отказ в займе клиентам старше %d лет"
-                    ,maxAge)
-            ).addConstraintViolation();
             return false;
         }
 

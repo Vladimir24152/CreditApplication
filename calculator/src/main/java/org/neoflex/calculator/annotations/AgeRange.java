@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface AgeRange {
-    String message() default "Отказ в займе для клиентов младше {minAge} и старше {maxAge} лет";
+    String message() default "Отказ в займе для клиентов младше {minAge} или старше {maxAge} лет";
 
     Class<?>[] groups() default {};
 

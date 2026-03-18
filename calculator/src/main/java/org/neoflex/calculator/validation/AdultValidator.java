@@ -5,6 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import org.neoflex.calculator.annotations.Adult;
 
 import java.time.LocalDate;
+import java.time.Period;
 
 public class AdultValidator implements ConstraintValidator<Adult, LocalDate> {
 
@@ -14,11 +15,7 @@ public class AdultValidator implements ConstraintValidator<Adult, LocalDate> {
             return false;
         }
 
-        if (LocalDate.now().minusYears(18).isBefore(value)) {
-            context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(
-                    "Отказ в займе - Неверная дата рождения, Клиент должен быть совершеннолетним"
-            ).addConstraintViolation();
+        if (Period.between(value, LocalDate.now()).getYears() < 18) {
             return false;
         }
 

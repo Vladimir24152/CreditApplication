@@ -120,9 +120,7 @@ public class CreditCalculationService {
 
     private BigDecimal calculateMonthlyPayment(BigDecimal amount, Integer term, BigDecimal finalRate, Boolean isInsuranceEnabled) {
 
-        System.out.println(amount + ", " + term + ", " + finalRate);
         BigDecimal monthlyPayment = creditCalculator.calculateMonthlyPayment(amount,term,finalRate);
-        System.out.println(monthlyPayment);
 
         if (isInsuranceEnabled == null) {
             throw new NullPointerException("Отсутствует информация о страховке");
