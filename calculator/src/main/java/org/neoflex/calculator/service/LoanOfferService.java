@@ -1,11 +1,13 @@
 package org.neoflex.calculator.service;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.calculator.constants.LoanCalculatorConstants;
 import org.neoflex.calculator.dto.LoanStatementRequestDto;
 import org.neoflex.calculator.dto.response.LoanOfferDto;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,6 +21,7 @@ import static org.neoflex.calculator.service.CreditCalculator.PERCENT_DIVISOR;
 
 @Slf4j
 @Service
+@Validated
 @RequiredArgsConstructor
 public class LoanOfferService {
 
@@ -71,7 +74,8 @@ public class LoanOfferService {
                 .build();
     }
 
-    private BigDecimal calculateRate(Boolean isInsuranceEnabled, Boolean isSalaryClient) {
+    private BigDecimal calculateRate(@NotNull(message = "Флаг страховки обязателен") Boolean isInsuranceEnabled,
+                                     @NotNull(message = "Флаг зарплатного клиента обязателен") Boolean isSalaryClient) {
         BigDecimal rate = LoanCalculatorConstants.BASE_RATE;
 
         if (isInsuranceEnabled) {
