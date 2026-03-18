@@ -7,7 +7,7 @@ import org.neoflex.calculator.annotations.MinimumCurrentWorkExperience;
 public class MinimumCurrentWorkExperienceValidator  implements
         ConstraintValidator<MinimumCurrentWorkExperience, Integer> {
 
-    private Integer countOfMonth;
+    private int countOfMonth;
 
     @Override
     public void initialize(MinimumCurrentWorkExperience constraintAnnotation) {
@@ -17,7 +17,7 @@ public class MinimumCurrentWorkExperienceValidator  implements
     @Override
     public boolean isValid(Integer value, ConstraintValidatorContext context) {
         if (value == null){
-            return false;
+            return true;
         }
 
         if (value < countOfMonth) {

@@ -20,7 +20,7 @@ public class RatioOfTheAmountAndSalaryValidator implements
     @Override
     public boolean isValid(ScoringDataDto dto, ConstraintValidatorContext context) {
         if (dto == null) {
-            return false;
+            return true;
         }
 
         BigDecimal amount = dto.getAmount();
