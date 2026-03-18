@@ -2,6 +2,7 @@ package org.neoflex.calculator.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.calculator.dto.response.HttpErrorResponse;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -50,8 +51,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<HttpErrorResponse> handlerIllegalArgumentException (Exception e) {
 
         return buildErrorResponse(
-                HttpStatus.BAD_REQUEST,
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 e.getMessage()
         );
     }
@@ -75,6 +76,15 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<HttpErrorResponse> handleRuntimeException(RuntimeException e) {
+        return buildErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                "Произошла внутренняя ошибка сервера"
+        );
+    }
+
     private ResponseEntity<HttpErrorResponse> buildErrorResponse(
             HttpStatus status, String type, String message) {
         log.error("{}: {}", type, message);
@@ -90,11 +100,9 @@ public class GlobalExceptionHandler {
     private String getErrorMessageFromMethodArgumentNotValidException(Exception e){
         if (e instanceof MethodArgumentNotValidException ex) {
             return ex.getBindingResult()
-                    .getFieldErrors()
+                    .getAllErrors()
                     .stream()
-                    .map(error -> String.format("Поле '%s': %s",
-                            error.getField(),
-                            error.getDefaultMessage()))
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
                     .collect(Collectors.joining("; "));
         }
         return e.getMessage();

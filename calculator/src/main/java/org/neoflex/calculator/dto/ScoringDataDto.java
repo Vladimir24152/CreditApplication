@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.neoflex.calculator.annotations.Adult;
 import org.neoflex.calculator.annotations.AgeRange;
-import org.neoflex.calculator.annotations.VerificationAmountVsSalary;
+import org.neoflex.calculator.annotations.RatioOfTheAmountAndSalary;
 import org.neoflex.calculator.enums.Gender;
 import org.neoflex.calculator.enums.MaritalStatus;
 
@@ -25,7 +25,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Builder
-@VerificationAmountVsSalary
+@RatioOfTheAmountAndSalary
 @Schema(description = "Данные для скоринга")
 public class ScoringDataDto {
 

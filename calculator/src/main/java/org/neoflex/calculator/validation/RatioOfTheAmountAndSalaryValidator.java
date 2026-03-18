@@ -2,18 +2,18 @@ package org.neoflex.calculator.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.neoflex.calculator.annotations.VerificationAmountVsSalary;
+import org.neoflex.calculator.annotations.RatioOfTheAmountAndSalary;
 import org.neoflex.calculator.dto.ScoringDataDto;
 
 import java.math.BigDecimal;
 
-public class AmountVsSalaryValidator implements
-        ConstraintValidator<VerificationAmountVsSalary, ScoringDataDto> {
+public class RatioOfTheAmountAndSalaryValidator implements
+        ConstraintValidator<RatioOfTheAmountAndSalary, ScoringDataDto> {
 
     private int times;
 
     @Override
-    public void initialize(VerificationAmountVsSalary constraintAnnotation) {
+    public void initialize(RatioOfTheAmountAndSalary constraintAnnotation) {
         this.times = constraintAnnotation.times();
     }
 
@@ -34,11 +34,6 @@ public class AmountVsSalaryValidator implements
         BigDecimal maxAllowedAmount = salary.multiply(BigDecimal.valueOf(times));
 
         if (amount.compareTo(maxAllowedAmount) > 0) {
-            context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(
-                    String.format("Отказ в займе - сумма кредита не должна превышать зарплату более чем в %d раз",
-                            times)
-            ).addPropertyNode("amount").addConstraintViolation();
             return false;
         }
 

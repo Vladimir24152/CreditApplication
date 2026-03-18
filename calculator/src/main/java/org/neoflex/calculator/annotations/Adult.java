@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Adult {
-    String message() default "Неверная дата рождения, Клиент должен быть совершеннолетним";
+    String message() default "Отказ в займе - Неверная дата рождения, Клиент должен быть совершеннолетним";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

@@ -21,11 +21,6 @@ public class MinimumTotalWorkExperienceValidator implements
         }
 
         if (value < countOfMonth) {
-            context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(String.format(
-                    "Отказ в займе клиентам с общим стажем менее %d месяцев"
-                    ,countOfMonth)
-            ).addConstraintViolation();
             return false;
         }
 
