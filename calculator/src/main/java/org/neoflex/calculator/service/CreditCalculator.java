@@ -1,34 +1,29 @@
-package org.neoflex.calculator.util;
+package org.neoflex.calculator.service;
 
-import lombok.experimental.UtilityClass;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 
 @Slf4j
-@UtilityClass
-public class CalculateCreditUtil {
+@Service
+@RequiredArgsConstructor
+public class CreditCalculator {
 
     public static final BigDecimal MONTHS_IN_YEAR = new BigDecimal("12");
     public static final BigDecimal PERCENT_DIVISOR = new BigDecimal("100");
     public static final int CALC_SCALE = 10;
     public static final int RESULT_SCALE = 2;
 
-    public static BigDecimal calculateMonthlyRate(BigDecimal rate){
+    public BigDecimal calculateMonthlyRate(BigDecimal rate){
         return rate
                 .divide(PERCENT_DIVISOR, CALC_SCALE, RoundingMode.HALF_UP)
                 .divide(MONTHS_IN_YEAR, CALC_SCALE, RoundingMode.HALF_UP);
     }
 
-    public static BigDecimal calculatePsk(BigDecimal monthlyPayment, Integer term) {
-        return monthlyPayment.multiply(new BigDecimal(term));
-    }
-
-
-    public static BigDecimal calculateMonthlyPayment(BigDecimal amount, Integer term, BigDecimal finalRate) {
+    public BigDecimal calculateMonthlyPayment(BigDecimal amount, Integer term, BigDecimal finalRate) {
         BigDecimal monthlyRate = calculateMonthlyRate(finalRate);
 
         BigDecimal onePlusRate = BigDecimal.ONE.add(monthlyRate);
@@ -40,9 +35,5 @@ public class CalculateCreditUtil {
 
         log.debug("Аннуитетный платеж по кредиту = {}",monthlyPayment);
         return monthlyPayment;
-    }
-
-    public Boolean isValidBirthDate(LocalDate birthDate){
-        return LocalDate.now().minusYears(18).isBefore(birthDate);
     }
 }

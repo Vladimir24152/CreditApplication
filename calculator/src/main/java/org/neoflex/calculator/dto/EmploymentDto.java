@@ -1,7 +1,6 @@
 package org.neoflex.calculator.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -11,6 +10,9 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.neoflex.calculator.annotations.MinimumCurrentWorkExperience;
+import org.neoflex.calculator.annotations.MinimumTotalWorkExperience;
+import org.neoflex.calculator.annotations.NotUnemployed;
 import org.neoflex.calculator.enums.EmploymentStatus;
 import org.neoflex.calculator.enums.Position;
 
@@ -27,6 +29,7 @@ public class EmploymentDto {
     @Schema(description = "ИНН работодателя", example = "1234567890")
     private String employerInn;
 
+    @NotUnemployed(message = "Отказ в займе нетрудоустроенным клиентам")
     @NotNull(message = "Статус занятости обязателен")
     @Schema(description = "Статус занятости", example = "EMPLOYED")
     private EmploymentStatus employmentStatus;
@@ -38,12 +41,14 @@ public class EmploymentDto {
     @NotNull(message = "Общий стаж обязателен")
     @Min(value = 0, message = "Общий стаж не может быть отрицательным")
     @Max(value = 900, message = "Общий стаж не может превышать 900 месяцев")
+    @MinimumTotalWorkExperience(countOfMonth = 18, message = "Отказ в займе клиентам с общим стажем менее 18 месяцев")
     @Schema(description = "Общий стаж в месяцах", example = "60")
     private Integer workExperienceTotal;
 
     @NotNull(message = "Текущий стаж обязателен")
     @Min(value = 0, message = "Текущий стаж не может быть отрицательным")
     @Max(value = 900, message = "Текущий стаж не может превышать 900 месяцев")
+    @MinimumCurrentWorkExperience(countOfMonth = 3, message = "Отказ в займе клиентам с текущим стажем менее 3 месяцев")
     @Schema(description = "Текущий стаж в месяцах", example = "24")
     private Integer workExperienceCurrent;
 

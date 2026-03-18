@@ -2,10 +2,17 @@ package org.neoflex.calculator.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.neoflex.calculator.annotations.Adult;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -45,6 +52,7 @@ public class LoanStatementRequestDto {
     @Schema(description = "Email", example = "ivan@example.com")
     private String email;
 
+    @Adult(message = "Клиент должен быть совершеннолетним")
     @NotNull(message = "Дата рождения обязательна")
     @Past(message = "Дата рождения должна быть в прошлом")
     @JsonFormat(pattern = "yyyy-MM-dd")

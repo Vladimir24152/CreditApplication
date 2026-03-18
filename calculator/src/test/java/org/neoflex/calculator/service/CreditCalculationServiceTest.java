@@ -3,50 +3,58 @@ package org.neoflex.calculator.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.neoflex.calculator.config.LoanCalculatorProperties;
-import org.neoflex.calculator.dto.CreditDto;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.neoflex.calculator.constants.LoanCalculatorConstants;
 import org.neoflex.calculator.dto.EmploymentDto;
 import org.neoflex.calculator.dto.ScoringDataDto;
+import org.neoflex.calculator.dto.response.CreditDto;
 import org.neoflex.calculator.enums.EmploymentStatus;
 import org.neoflex.calculator.enums.Gender;
 import org.neoflex.calculator.enums.MaritalStatus;
 import org.neoflex.calculator.enums.Position;
-import org.neoflex.calculator.exception.NotValidBirthDateException;
-import org.neoflex.calculator.exception.ScoringFailedException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Тесты сервиса CreditCalculationService")
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class CreditCalculationServiceTest {
 
+    @Mock
+    private CreditCalculator creditCalculator;
+
+    @InjectMocks
     private CreditCalculationService creditCalculationService;
-    private LoanCalculatorProperties properties;
 
     private ScoringDataDto request;
 
-    EmploymentDto employment;
+    private static final BigDecimal EXPECTED_AMOUNT = new BigDecimal("1000000");
+    private static final int EXPECTED_TERM = 12;
+
 
     @BeforeEach
     void setUp() {
-        properties = new LoanCalculatorProperties();
-        properties.setBaseRate(new BigDecimal("15.0"));
-        properties.setInsuranceRateDiscount(new BigDecimal("3.0"));
-        properties.setInsuranceCostPercent(new BigDecimal("2.0"));
-        properties.setMarriedRateDiscount(new BigDecimal("3.0"));
-        properties.setMaleRateDiscount(new BigDecimal("3.0"));
-        properties.setMidManagerRateDiscount(new BigDecimal("2.0"));
-        properties.setTopManagerRateDiscount(new BigDecimal("3.0"));
-        properties.setSelfEmployRateAdd(new BigDecimal("2.0"));
-        properties.setBusinessOwnerRateAdd(new BigDecimal("1.0"));
-        properties.setDivorcedRateAdd(new BigDecimal("1.0"));
-        properties.setNotBinaryRateAdd(new BigDecimal("7.0"));
 
-        creditCalculationService = new CreditCalculationService(properties);
-
-        employment = EmploymentDto.builder()
+        EmploymentDto employment = EmploymentDto.builder()
                 .employmentStatus(EmploymentStatus.EMPLOYED)
                 .employerInn("1234567890")
                 .salary(new BigDecimal(100_000))
@@ -56,8 +64,8 @@ class CreditCalculationServiceTest {
                 .build();
 
         request = ScoringDataDto.builder()
-                .amount(new BigDecimal("1000000"))
-                .term(12)
+                .amount(EXPECTED_AMOUNT)
+                .term(EXPECTED_TERM)
                 .firstName("Иван")
                 .lastName("Иванов")
                 .middleName("Иванович")
@@ -74,91 +82,50 @@ class CreditCalculationServiceTest {
                 .isSalaryClient(true)
                 .gender(Gender.MALE)
                 .build();
+
+        when(creditCalculator.calculateMonthlyPayment(any(), anyInt(), any()))
+                .thenReturn(new BigDecimal("90258.31"));
+        when(creditCalculator.calculateMonthlyRate(any()))
+                .thenReturn(new BigDecimal("0.0125"));
     }
 
     @Test
     @DisplayName("Успешный расчет кредита при корректных данных клиента")
     void whenClientDataIsValidThenCalculateCreditReturnsCreditDto() {
 
+
         CreditDto result = creditCalculationService.calculateCredit(request);
 
         assertNotNull(result);
-        assertEquals(0, new BigDecimal("1000000").compareTo(result.getAmount()));
-        assertEquals(12, result.getTerm());
+        assertEquals(0, EXPECTED_AMOUNT.compareTo(result.getAmount()));
+        assertEquals(EXPECTED_TERM, result.getTerm());
         assertNotNull(result.getPaymentSchedule());
-        assertEquals(12, result.getPaymentSchedule().size(),
+        assertEquals(EXPECTED_TERM, result.getPaymentSchedule().size(),
                 "График платежей должен содержать 12 записей");
+
+        verify(creditCalculator, times(1)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(EXPECTED_TERM),
+                any(BigDecimal.class)
+        );
+        verify(creditCalculator).calculateMonthlyRate(any());
     }
 
-    @Test
-    @DisplayName("Клиент младше 20 лет - выбрасывается исключение ScoringFailedException")
-    void whenTheClientIsUnder20YearsOfAgeThenThrowScoringFailedException() {
-        request.setBirthDate(LocalDate.now().minusYears(19));
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Клиент старше 65 лет - выбрасывается исключение ScoringFailedException")
-    void whenTheClientIsOver65YearsOfAgeThenThrowScoringFailedException() {
-        request.setBirthDate(LocalDate.now().minusYears(66));
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Клиент не трудоустроен - выбрасывается исключение ScoringFailedException")
-    void whenTheClientIsUnemployedThenThrowScoringFailedException() {
-        request.getEmployment().setEmploymentStatus(EmploymentStatus.UNEMPLOYED);
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Сумма кредита превышает 24 зарплаты - выбрасывается исключение ScoringFailedException")
-    void whenLoanAmountExceeds24SalariesThenThrowScoringFailedException() {
-        request.setAmount(request.getEmployment().getSalary().multiply(new BigDecimal(25)));
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Общий стаж менее 18 месяцев - выбрасывается исключение ScoringFailedException")
-    void whenTotalExperienceIsLessThan18MonthsThenThrowScoringFailedException() {
-        request.getEmployment().setWorkExperienceTotal(12);
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
 
     @Test
     @DisplayName("Общий стаж ровно 18 месяцев - исключение не выбрасывается")
     void whenTotalExperienceEquals18MonthsThenNoExceptionThrown() {
+
         request.getEmployment().setWorkExperienceTotal(18);
 
         assertDoesNotThrow(() -> creditCalculationService.calculateCredit(request));
-    }
 
-    @Test
-    @DisplayName("Текущий стаж менее 3 месяцев - выбрасывается исключение ScoringFailedException")
-    void whenCurrentExperienceIsLessThan3MonthsThenThrowScoringFailedException() {
-        request.getEmployment().setWorkExperienceCurrent(2);
-
-        assertThrows(ScoringFailedException.class,
-                () -> creditCalculationService.calculateCredit(request));
-    }
-
-    @Test
-    @DisplayName("Клиент младше 18 лет - выбрасывается исключение NotValidBirthDateException")
-    void whenTheClientIsUnder18YearsOfAgeThenThrowNotValidBirthDateException() {
-        request.setBirthDate(LocalDate.now().minusYears(17));
-
-        assertThrows(NotValidBirthDateException.class,
-                () -> creditCalculationService.calculateCredit(request));
+        verify(creditCalculator, times(1)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(EXPECTED_TERM),
+                any(BigDecimal.class)
+        );
+        verify(creditCalculator).calculateMonthlyRate(any());
     }
 
     @Test
@@ -168,6 +135,13 @@ class CreditCalculationServiceTest {
         CreditDto result = creditCalculationService.calculateCredit(request);
 
         assertTrue(result.getPsk().compareTo(result.getAmount()) > 0);
+
+        verify(creditCalculator, times(1)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(12),
+                any(BigDecimal.class)
+        );
+        verify(creditCalculator).calculateMonthlyRate(any());
     }
 
     @Test
@@ -181,6 +155,13 @@ class CreditCalculationServiceTest {
                 .getRemainingDebt();
 
         assertEquals(0, BigDecimal.ZERO.compareTo(lastRemainingDebt));
+
+        verify(creditCalculator, times(1)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(12),
+                any(BigDecimal.class)
+        );
+        verify(creditCalculator).calculateMonthlyRate(any());
     }
 
     @Test
@@ -191,6 +172,13 @@ class CreditCalculationServiceTest {
         CreditDto result = creditCalculationService.calculateCredit(request);
 
         assertEquals(expectedFirstPaymentDate, result.getPaymentSchedule().get(0).getDate());
+
+        verify(creditCalculator, times(1)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(EXPECTED_TERM),
+                any(BigDecimal.class)
+        );
+        verify(creditCalculator).calculateMonthlyRate(any());
     }
 
     @Test
@@ -204,7 +192,8 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = selfEmployedCredit.getRate().subtract(employedCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getSelfEmployRateAdd()) == 0);
+        assertEquals(0,difference.compareTo(LoanCalculatorConstants.SELF_EMPLOY_RATE_ADD));
+        verify(creditCalculator,times(2)).calculateMonthlyRate(any());
     }
 
     @Test
@@ -218,7 +207,8 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = businessOwnerCredit.getRate().subtract(employedCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getBusinessOwnerRateAdd()) == 0);
+        assertEquals(0, difference.compareTo(LoanCalculatorConstants.BUSINESS_OWNER_RATE_ADD));
+        verify(creditCalculator,times(2)).calculateMonthlyRate(any());
     }
 
     @Test
@@ -232,7 +222,8 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(topManagerCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getTopManagerRateDiscount()) == 0);
+        assertEquals(0,difference.compareTo(LoanCalculatorConstants.TOP_MANAGER_RATE_DISCOUNT));
+        verify(creditCalculator,times(2)).calculateMonthlyRate(any());
     }
 
     @Test
@@ -246,7 +237,8 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(midManagerCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getMidManagerRateDiscount()) == 0);
+        assertEquals(0, difference.compareTo(LoanCalculatorConstants.MID_MANAGER_RATE_DISCOUNT));
+        verify(creditCalculator,times(2)).calculateMonthlyRate(any());
     }
 
     @Test
@@ -260,7 +252,8 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(marriedCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getMarriedRateDiscount()) == 0);
+        assertEquals(0,difference.compareTo(LoanCalculatorConstants.MARRIED_RATE_DISCOUNT));
+        verify(creditCalculator,times(2)).calculateMonthlyRate(any());
     }
 
     @Test
@@ -274,7 +267,8 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = divorcedCredit.getRate().subtract(credit.getRate());
 
-        assertTrue(difference.compareTo(properties.getDivorcedRateAdd()) == 0);
+        assertEquals(0, difference.compareTo(LoanCalculatorConstants.DIVORCED_RATE_ADD));
+        verify(creditCalculator,times(2)).calculateMonthlyRate(any());
     }
 
     @Test
@@ -290,7 +284,8 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(maleCredit.getRate());
 
-        assertTrue(difference.compareTo(properties.getMaleRateDiscount()) == 0);
+        assertEquals(0, difference.compareTo(LoanCalculatorConstants.MALE_RATE_DISCOUNT));
+        verify(creditCalculator,times(2)).calculateMonthlyRate(any());
     }
 
     @Test
@@ -306,7 +301,8 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(maleCredit.getRate());
 
-        assertTrue(difference.compareTo(BigDecimal.ZERO) == 0);
+        assertEquals(0, difference.compareTo(BigDecimal.ZERO));
+        verify(creditCalculator,times(2)).calculateMonthlyRate(any());
     }
 
     @Test
@@ -322,7 +318,8 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = credit.getRate().subtract(maleCredit.getRate());
 
-        assertTrue(difference.compareTo(BigDecimal.ZERO) == 0);
+        assertEquals(0, difference.compareTo(BigDecimal.ZERO));
+        verify(creditCalculator,times(2)).calculateMonthlyRate(any());
     }
 
     @Test
@@ -337,6 +334,93 @@ class CreditCalculationServiceTest {
 
         BigDecimal difference = notBinaryCredit.getRate().subtract(credit.getRate());
 
-        assertTrue(difference.compareTo(properties.getNotBinaryRateAdd()) == 0);
+        assertEquals(0, difference.compareTo(LoanCalculatorConstants.NOT_BINARY_RATE_ADD));
+        verify(creditCalculator,times(2)).calculateMonthlyRate(any());
+    }
+
+    @Test
+    @DisplayName("Расчет для разведенного мужчины 40 лет со страховкой")
+    void whenDivorcedMale40WithInsuranceThenMultipleAdjustments() {
+        request.setMaritalStatus(MaritalStatus.DIVORCED);
+        request.setGender(Gender.MALE);
+        request.setBirthDate(LocalDate.now().minusYears(40));
+        request.setIsInsuranceEnabled(true);
+
+        CreditDto result = creditCalculationService.calculateCredit(request);
+
+        assertNotNull(result);
+        verify(creditCalculator, times(1)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(EXPECTED_TERM),
+                argThat(rate -> {
+                    BigDecimal expectedRate = LoanCalculatorConstants.BASE_RATE
+                            .add(LoanCalculatorConstants.DIVORCED_RATE_ADD)
+                            .subtract(LoanCalculatorConstants.MALE_RATE_DISCOUNT)
+                            .subtract(LoanCalculatorConstants.INSURANCE_RATE_DISCOUNT);
+                    return rate.compareTo(expectedRate) == 0;
+                })
+        );
+    }
+
+    @Test
+    @DisplayName("Расчет для женщины 35 лет без страховки")
+    void whenFemale35WithoutInsuranceThenGenderDiscountApplied() {
+        request.setGender(Gender.FEMALE);
+        request.setBirthDate(LocalDate.now().minusYears(35));
+        request.setIsInsuranceEnabled(false);
+
+        CreditDto result = creditCalculationService.calculateCredit(request);
+
+        assertNotNull(result);
+        verify(creditCalculator, times(1)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(EXPECTED_TERM),
+                argThat(rate -> {
+                    BigDecimal expectedRate = LoanCalculatorConstants.BASE_RATE
+                            .subtract(LoanCalculatorConstants.MARRIED_RATE_DISCOUNT)
+                            .subtract(LoanCalculatorConstants.FEMALE_RATE_DISCOUNT);
+                    return rate.compareTo(expectedRate) == 0;
+                })
+        );
+    }
+
+    @Test
+    @DisplayName("Расчет для небинарного клиента 40 лет со страховкой")
+    void whenDivorcedNotBinary40WithInsuranceThenMultipleAdjustments() {
+        request.setMaritalStatus(MaritalStatus.DIVORCED);
+        request.setGender(Gender.NOT_BINARY);
+        request.setBirthDate(LocalDate.now().minusYears(40));
+        request.setIsInsuranceEnabled(true);
+
+        CreditDto result = creditCalculationService.calculateCredit(request);
+
+        assertNotNull(result);
+        verify(creditCalculator, times(1)).calculateMonthlyPayment(
+                eq(EXPECTED_AMOUNT),
+                eq(EXPECTED_TERM),
+                argThat(rate -> {
+                    BigDecimal expectedRate = LoanCalculatorConstants.BASE_RATE
+                            .add(LoanCalculatorConstants.DIVORCED_RATE_ADD)
+                            .add(LoanCalculatorConstants.NOT_BINARY_RATE_ADD)
+                            .subtract(LoanCalculatorConstants.INSURANCE_RATE_DISCOUNT);
+                    return rate.compareTo(expectedRate) == 0;
+                })
+        );
+    }
+
+    @Test
+    @DisplayName("Должен бросить NPE если request == null")
+    void whenRequestIsNullThenReturnNPE() {
+        request = null;
+
+        assertThrows(NullPointerException.class,() -> creditCalculationService.calculateCredit(request));
+    }
+
+    @Test
+    @DisplayName("Должен бросить NPE если IsInsuranceEnabled == null")
+    void whenIsInsuranceEnabledIsNullThenReturnNPE() {
+        request.setIsInsuranceEnabled(null);
+
+        assertThrows(NullPointerException.class,() -> creditCalculationService.calculateCredit(request));
     }
 }

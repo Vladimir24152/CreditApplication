@@ -13,6 +13,9 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.neoflex.calculator.annotations.Adult;
+import org.neoflex.calculator.annotations.AgeRange;
+import org.neoflex.calculator.annotations.VerificationAmountVsSalary;
 import org.neoflex.calculator.enums.Gender;
 import org.neoflex.calculator.enums.MaritalStatus;
 
@@ -22,6 +25,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Builder
+@VerificationAmountVsSalary
 @Schema(description = "Данные для скоринга")
 public class ScoringDataDto {
 
@@ -53,6 +57,8 @@ public class ScoringDataDto {
     @Schema(description = "Пол", example = "MALE")
     private Gender gender;
 
+    @Adult(message = "Клиент должен быть совершеннолетним")
+    @AgeRange(minAge = 20,maxAge = 65, message = "Отказ в займе для клиентов младше 20 и старше 65 лет")
     @NotNull(message = "Дата рождения обязательна")
     @Past(message = "Дата рождения должна быть в прошлом")
     @JsonFormat(pattern = "yyyy-MM-dd")
