@@ -14,3 +14,7 @@ springdoc:
     path: /swagger-ui.html
     operationsSorter: method
     tagsSorter: alpha
+
+calculator:
+  service:
+    url: http://localhost:8080

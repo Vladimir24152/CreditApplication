@@ -45,6 +45,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=pass
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=true
+      - CALCULATOR_SERVICE_URL=http://calculator:8080
     networks:
       - credit-network
 

@@ -62,16 +62,16 @@ public class Client {
 
     @Enumerated(EnumType.STRING)
     @Comment("Пол клиента")
-    @Column(name = "gender", nullable = false)
+    @Column(name = "gender")
     private Gender gender;
 
     @Enumerated(EnumType.STRING)
     @Comment("Семейное положение клиента")
-    @Column(name = "marital_status", nullable = false)
+    @Column(name = "marital_status")
     private MaritalStatus maritalStatus;
 
     @Comment("Количество людей находящихся на иждивении клиента")
-    @Column(name = "dependent_amount", nullable = false)
+    @Column(name = "dependent_amount")
     private Integer dependentAmount;
 
     @JdbcTypeCode(SqlTypes.JSON)
@@ -81,10 +81,10 @@ public class Client {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Comment("Данные о трудоустройстве клиента")
-    @Column(name = "employment",columnDefinition = "jsonb", nullable = false)
+    @Column(name = "employment",columnDefinition = "jsonb")
     private Employment employment;
 
-    @Comment("Количество людей находящихся на иждивении клиента")
-    @Column(name = "account_number", nullable = false)
-    private String accountNumber;
+    @Comment("Номер аккаунта")
+//    @Column(name = "account_number")
+    private String accountNumber;//что за номер аккаунта?
 }

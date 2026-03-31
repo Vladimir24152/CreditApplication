@@ -12,7 +12,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,10 +26,14 @@ import org.neoflex.deal.model.enums.ApplicationStatus;
 import org.neoflex.deal.model.jsonb.StatusHistory;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "statement")
 public class Statement {
@@ -35,7 +42,7 @@ public class Statement {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Comment("Идентификатор заявления")
     @Column(name = "statement_id")
-    private UUID statement;
+    private UUID statementId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false, unique = true)
@@ -43,7 +50,7 @@ public class Statement {
     private Client client;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "credit_id", nullable = false, unique = true)
+    @JoinColumn(name = "credit_id", unique = true)
     @Comment("Идентификатор кредита")
     private Credit credit;
 
@@ -59,7 +66,7 @@ public class Statement {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Comment("Предложение по кредиту")
-    @Column(name = "applied_offer",columnDefinition = "jsonb", nullable = false)
+    @Column(name = "applied_offer",columnDefinition = "jsonb")
     private LoanOfferDto appliedOffer;//Не понимаю что это уточнить!!! Нет на схеме
 
     @CreationTimestamp
@@ -73,6 +80,6 @@ public class Statement {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Comment("Статус истории")
-    @Column(name = "status_history",columnDefinition = "jsonb")//Не понимаю что это уточнить!!! может быть null или нет?
-    private StatusHistory statusHistory;
+    @Column(name = "status_history",columnDefinition = "jsonb",nullable = false)
+    private List<StatusHistory> statusHistory;
 }

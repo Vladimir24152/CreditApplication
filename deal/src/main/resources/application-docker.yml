@@ -28,3 +28,7 @@ springdoc:
 logging:
   level:
     org.neoflex.deal: DEBUG
+
+calculator:
+  service:
+    url: ${CALCULATOR_SERVICE_URL:http://calculator:8080}
