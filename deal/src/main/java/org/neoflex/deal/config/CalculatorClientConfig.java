@@ -2,7 +2,7 @@ package org.neoflex.deal.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.deal.client.CalculatorClient;
+import org.neoflex.deal.client.calculator.CalculatorClient;
 import org.neoflex.deal.dto.response.HttpErrorResponse;
 import org.neoflex.deal.exception.InternalServiceException;
 import org.springframework.beans.factory.annotation.Value;

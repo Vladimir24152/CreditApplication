@@ -85,6 +85,6 @@ public class Client {
     private Employment employment;
 
     @Comment("Номер аккаунта")
-//    @Column(name = "account_number")
-    private String accountNumber;//что за номер аккаунта?
+    @Column(name = "account_number")
+    private String accountNumber;
 }

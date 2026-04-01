@@ -1,4 +1,4 @@
-package org.neoflex.deal.client;
+package org.neoflex.deal.client.calculator;
 
 import org.neoflex.deal.dto.CreditDto;
 import org.neoflex.deal.dto.LoanOfferDto;

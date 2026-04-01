@@ -33,7 +33,7 @@ public class FinishRegistrationRequestDto {
 
     @NotNull(message = "Количество иждивенцев обязательно")
     @Min(value = 0, message = "Количество иждивенцев не может быть отрицательным")
-    @Max(value = 20, message = "Количество иждивенцев не должно превышать 20")
+    @Max(value = 10, message = "Количество иждивенцев не должно превышать 10")
     private Integer dependentAmount;
 
     @NotNull(message = "Дата выдачи паспорта обязательна")

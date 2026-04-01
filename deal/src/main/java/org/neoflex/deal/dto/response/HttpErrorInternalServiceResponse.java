@@ -2,17 +2,14 @@ package org.neoflex.deal.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 
-@Setter
+
 @Getter
 @AllArgsConstructor
 public class HttpErrorInternalServiceResponse {
-
-    private final String header;
 
     private final int code;
 
@@ -20,9 +17,10 @@ public class HttpErrorInternalServiceResponse {
 
     private final LocalDateTime timestamp;
 
+    private final String message;
+
     private final ServiceErrorMessage serviceErrorMessage;
 
-    @Setter
     @Getter
     @AllArgsConstructor
     public static class ServiceErrorMessage {

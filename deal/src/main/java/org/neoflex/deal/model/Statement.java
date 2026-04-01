@@ -67,14 +67,14 @@ public class Statement {
     @JdbcTypeCode(SqlTypes.JSON)
     @Comment("Предложение по кредиту")
     @Column(name = "applied_offer",columnDefinition = "jsonb")
-    private LoanOfferDto appliedOffer;//Не понимаю что это уточнить!!! Нет на схеме
+    private LoanOfferDto appliedOffer;
 
     @CreationTimestamp
     @Comment("Дата исполнения заявки")
     @Column(name = "sign_date")
     private LocalDateTime signDate;
 
-    @Comment("Не понимаю что это уточнить")//Не понимаю что это уточнить!!!
+    @Comment("Не понимаю что это уточнить")
     @Column(name = "ses_сode")
     private String sesCode;
 

@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<HttpErrorResponse> handleNoResourceFoundException(
+    public ResponseEntity<HttpErrorInternalServiceResponse> handleNoResourceFoundException(
             NoResourceFoundException e) {
 
-        return buildErrorResponse(
+        return buildErrorInternalServiceResponse(
                 HttpStatus.NOT_FOUND,
                 "API_NOT_FOUND",
                 "Запрашиваемый API не найден: " + e.getResourcePath()
@@ -32,10 +32,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<HttpErrorResponse> handleEntityNotFoundException(
+    public ResponseEntity<HttpErrorInternalServiceResponse> handleEntityNotFoundException(
             EntityNotFoundException e) {
 
-        return buildErrorResponse(
+        return buildErrorInternalServiceResponse(
                 HttpStatus.NOT_FOUND,
                 "ENTITY_NOT_FOUND",
                 e.getMessage()
@@ -43,8 +43,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({HttpMessageNotReadableException.class,IllegalArgumentException.class})
-    public ResponseEntity<HttpErrorResponse> handlerHttpMessageNotReadableException (Exception e) {
-        return buildErrorResponse(
+    public ResponseEntity<HttpErrorInternalServiceResponse> handlerHttpMessageNotReadableException (Exception e) {
+        return buildErrorInternalServiceResponse(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 String.format("Ошибка в формате запроса: %s", e.getMessage())
@@ -52,9 +52,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({NullPointerException.class})
-    public ResponseEntity<HttpErrorResponse> handlerIllegalArgumentException (Exception e) {
+    public ResponseEntity<HttpErrorInternalServiceResponse> handlerIllegalArgumentException (Exception e) {
 
-        return buildErrorResponse(
+        return buildErrorInternalServiceResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 e.getMessage()
@@ -62,8 +62,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
-    public ResponseEntity<HttpErrorResponse> handlerMethodArgumentNotValidException (Exception e) {
-        return buildErrorResponse(
+    public ResponseEntity<HttpErrorInternalServiceResponse> handlerMethodArgumentNotValidException (Exception e) {
+        return buildErrorInternalServiceResponse(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 getErrorMessageFromMethodArgumentNotValidException(e)
@@ -74,8 +74,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<HttpErrorInternalServiceResponse> handleInternalServiceException(InternalServiceException e) {
         return buildErrorInternalServiceResponse(
                 "Ошибка интеграции с внешним сервисом",
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                HttpStatus.BAD_GATEWAY,
+                HttpStatus.BAD_GATEWAY.getReasonPhrase(),
                 e.getServiceName(),
                 e.getMessage(),
                 e.getHttpErrorResponse()
@@ -83,13 +83,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<HttpErrorResponse> handleConstraintViolationException(ConstraintViolationException e) {
+    public ResponseEntity<HttpErrorInternalServiceResponse> handleConstraintViolationException(ConstraintViolationException e) {
         String message = e.getConstraintViolations()
                 .stream()
                 .map(violation -> violation.getMessage())
                 .collect(Collectors.joining("; "));
 
-        return buildErrorResponse(
+        return buildErrorInternalServiceResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 message
@@ -97,14 +97,27 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<HttpErrorInternalServiceResponse> buildErrorInternalServiceResponse(
-            String header,HttpStatus externalStatus, String type, String serviceName,String message,HttpErrorResponse httpErrorResponse) {
-        log.error("{}: {}", header, header);
+            String message,HttpStatus externalStatus, String type, String serviceName,String messageInnerService,HttpErrorResponse httpErrorResponse) {
+        log.error("{}: {}", type, message);
         HttpErrorInternalServiceResponse response = new HttpErrorInternalServiceResponse(
-                header,
                 externalStatus.value(),
                 type,
                 LocalDateTime.now(),
-                new HttpErrorInternalServiceResponse.ServiceErrorMessage(serviceName, message,httpErrorResponse)
+                message,
+                new HttpErrorInternalServiceResponse.ServiceErrorMessage(serviceName, messageInnerService,httpErrorResponse)
+        );
+        return ResponseEntity.status(externalStatus).body(response);
+    }
+
+    private ResponseEntity<HttpErrorInternalServiceResponse> buildErrorInternalServiceResponse(
+            HttpStatus externalStatus, String type,String message) {
+        log.error("{}: {}", type, message);
+        HttpErrorInternalServiceResponse response = new HttpErrorInternalServiceResponse(
+                externalStatus.value(),
+                type,
+                LocalDateTime.now(),
+                message,
+                null
         );
         return ResponseEntity.status(externalStatus).body(response);
     }

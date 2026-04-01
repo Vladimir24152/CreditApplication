@@ -11,22 +11,25 @@ import lombok.RequiredArgsConstructor;
 import org.neoflex.deal.dto.FinishRegistrationRequestDto;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
-import org.neoflex.deal.dto.response.HttpErrorResponse;
-import org.neoflex.deal.service.DealService;
+import org.neoflex.deal.dto.response.HttpErrorInternalServiceResponse;
+import org.neoflex.deal.service.CreditService;
+import org.neoflex.deal.service.StatementService;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/deal")
 @RequiredArgsConstructor
 public class DealController {
 
-    private final DealService dealService;
+    private final StatementService statementService;
+    private final CreditService creditService;
 
     @Operation(summary = "Расчет возможных условий кредита",
             description = "Принимает заявку на кредит и возвращает список кредитных предложений")
@@ -43,7 +46,7 @@ public class DealController {
                     description = "Ошибка валидации входных данных (некорректная дата рождения, паспортные данные)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "validationErrorExample",
                                     summary = "Ответ ошибки валидации",
@@ -62,7 +65,7 @@ public class DealController {
                     description = "Внутренняя ошибка сервера при обработке запроса",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "internalErrorExample",
                                     summary = "Пример пример внутренней ошибки",
@@ -80,7 +83,7 @@ public class DealController {
     })
     @PostMapping("/statement")
     public List<LoanOfferDto> calculationOfPossibleLoanTerms(@Valid @RequestBody LoanStatementRequestDto request){
-        return dealService.calculationOfPossibleLoanTerms(request);
+        return statementService.calculationOfPossibleLoanTerms(request);
     }
 
     @Operation(summary = "Выбор одного из кредитных предложений",
@@ -94,7 +97,7 @@ public class DealController {
                     description = "Ошибка валидации входных данных (отрицательное значение суммы займа и др.)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "validationErrorExample",
                                     summary = "Ответ ошибки валидации",
@@ -113,7 +116,7 @@ public class DealController {
                     description = "Не найдена заявка с id указанным в запросе",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "entityNotFoundErrorExample",
                                     summary = "Ответ ошибки отсутствия сущности",
@@ -132,7 +135,7 @@ public class DealController {
                     description = "Внутренняя ошибка сервера при обработке запроса",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "internalErrorExample",
                                     summary = "Пример пример внутренней ошибки",
@@ -150,7 +153,7 @@ public class DealController {
     })
     @PostMapping("/offer/select")
     public void choosingOneOfTheLoanOffers(@Valid @RequestBody LoanOfferDto request){
-        dealService.choosingOneOfTheLoanOffers(request);
+        statementService.choosingOneOfTheLoanOffers(request);
     }
 
     @Operation(summary = "Завершение регистрации и полный расчет кредита",
@@ -164,7 +167,7 @@ public class DealController {
                     description = "Ошибка валидации входных данных (код подразделения в неверном формате и др.)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "validationErrorExample",
                                     summary = "Ответ ошибки валидации",
@@ -183,7 +186,7 @@ public class DealController {
                     description = "Не найдена заявка с id указанным в запросе",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "entityNotFoundErrorExample",
                                     summary = "Ответ ошибки отсутствия сущности",
@@ -202,7 +205,7 @@ public class DealController {
                     description = "Внутренняя ошибка сервера при обработке запроса",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "internalErrorExample",
                                     summary = "Пример пример внутренней ошибки",
@@ -221,8 +224,8 @@ public class DealController {
     @PostMapping("/calculate/{statementId}")
     public void completionOfRegistrationAndFullCreditCalculation(
             @Valid @RequestBody FinishRegistrationRequestDto request,
-            @RequestParam String statementId
+            @PathVariable UUID statementId
     ){
-        dealService.completionOfRegistrationAndFullCreditCalculation(request,statementId);
+        creditService.completionOfRegistrationAndFullCreditCalculation(request,statementId);
     }
 }
