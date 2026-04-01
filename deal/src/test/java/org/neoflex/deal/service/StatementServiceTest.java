@@ -1,0 +1,323 @@
+package org.neoflex.deal.service;
+
+import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.neoflex.deal.client.calculator.CalculatorClientService;
+import org.neoflex.deal.dto.LoanOfferDto;
+import org.neoflex.deal.dto.LoanStatementRequestDto;
+import org.neoflex.deal.mapper.ClientMapper;
+import org.neoflex.deal.mapper.StatementMapper;
+import org.neoflex.deal.model.Client;
+import org.neoflex.deal.model.Statement;
+import org.neoflex.deal.model.enums.ApplicationStatus;
+import org.neoflex.deal.model.enums.ChangeType;
+import org.neoflex.deal.model.jsonb.StatusHistory;
+import org.neoflex.deal.repository.ClientRepository;
+import org.neoflex.deal.repository.StatementRepository;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@DisplayName("Тесты сервиса StatementService")
+@ExtendWith(MockitoExtension.class)
+class StatementServiceTest {
+
+    @Mock
+    private ClientRepository clientRepository;
+
+    @Mock
+    private StatementRepository statementRepository;
+
+    @Mock
+    private CalculatorClientService calculatorClientService;
+
+    @Mock
+    private ClientMapper clientMapper;
+
+    @Mock
+    private StatementMapper statementMapper;
+
+    @InjectMocks
+    private StatementService statementService;
+
+    private LoanStatementRequestDto loanStatementRequest;
+    private LoanOfferDto loanOfferRequest;
+    private Client testClient;
+    private Statement testStatement;
+    private List<LoanOfferDto> mockOffers;
+
+    @BeforeEach
+    void setUp() {
+        loanStatementRequest = LoanStatementRequestDto.builder()
+                .amount(BigDecimal.valueOf(1000000))
+                .term(12)
+                .firstName("Ivan")
+                .lastName("Ivanov")
+                .middleName("Ivanovich")
+                .email("ivan@example.com")
+                .birthDate(LocalDate.of(1990, 1, 1))
+                .passportSeries("1234")
+                .passportNumber("567890")
+                .build();
+
+        testClient = Client.builder()
+                .clientId(UUID.randomUUID())
+                .firstName("Ivan")
+                .lastName("Ivanov")
+                .middleName("Ivanovich")
+                .email("ivan@example.com")
+                .birthDate(LocalDate.of(1990, 1, 1))
+                .build();
+
+        testStatement = Statement.builder()
+                .statementId(UUID.randomUUID())
+                .client(testClient)
+                .status(ApplicationStatus.PREAPPROVAL)
+                .statusHistory(new ArrayList<>())
+                .creationDate(LocalDateTime.now())
+                .build();
+
+        mockOffers = List.of(
+                createLoanOffer(testStatement.getStatementId(), true, true),
+                createLoanOffer(testStatement.getStatementId(), false, true),
+                createLoanOffer(testStatement.getStatementId(), true, false),
+                createLoanOffer(testStatement.getStatementId(), false, false)
+        );
+
+        loanOfferRequest = LoanOfferDto.builder()
+                .statementId(testStatement.getStatementId())
+                .requestedAmount(BigDecimal.valueOf(1000000))
+                .totalAmount(BigDecimal.valueOf(1005000))
+                .term(12)
+                .monthlyPayment(BigDecimal.valueOf(87500))
+                .rate(BigDecimal.valueOf(12.5))
+                .isInsuranceEnabled(true)
+                .isSalaryClient(false)
+                .build();
+    }
+
+    private LoanOfferDto createLoanOffer(UUID statementId, Boolean insurance, Boolean salary) {
+        return LoanOfferDto.builder()
+                .statementId(statementId)
+                .requestedAmount(BigDecimal.valueOf(1000000))
+                .totalAmount(BigDecimal.valueOf(1005000))
+                .term(12)
+                .monthlyPayment(BigDecimal.valueOf(87500))
+                .rate(BigDecimal.valueOf(insurance && salary ? 11.0 : 15.0))
+                .isInsuranceEnabled(insurance)
+                .isSalaryClient(salary)
+                .build();
+    }
+
+    @Test
+    @DisplayName("Успешный расчет возможных условий кредита при корректных данных клиента")
+    void whenClientDataIsValidThenReturnFourLoanOffersWithStatementId() {
+        when(clientMapper.toClient(loanStatementRequest)).thenReturn(testClient);
+        when(clientRepository.save(any(Client.class))).thenReturn(testClient);
+        when(statementMapper.toStatement(testClient)).thenReturn(testStatement);
+        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
+
+        List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
+
+        assertNotNull(result);
+        assertEquals(4, result.size());
+
+        result.forEach(offer ->
+                assertEquals(testStatement.getStatementId(), offer.getStatementId())
+        );
+
+        verify(clientRepository, times(1)).save(any(Client.class));
+        verify(statementRepository, times(1)).save(any(Statement.class));
+        verify(calculatorClientService, times(1)).calculateLoanOffers(loanStatementRequest);
+    }
+
+    @Test
+    @DisplayName("При null запросе выбрасывается NullPointerException")
+    void whenRequestIsNullThenThrowNullPointerException() {
+        assertThrows(NullPointerException.class,
+                () -> statementService.calculationOfPossibleLoanTerms(null));
+    }
+
+    @Test
+    @DisplayName("При сохранении клиента выбрасывается исключение")
+    void whenSavingClientFailsThenThrowException() {
+        when(clientMapper.toClient(loanStatementRequest)).thenReturn(testClient);
+        when(clientRepository.save(any(Client.class))).thenThrow(new RuntimeException("Database error"));
+
+        assertThrows(RuntimeException.class,
+                () -> statementService.calculationOfPossibleLoanTerms(loanStatementRequest));
+
+        verify(statementRepository, never()).save(any(Statement.class));
+    }
+
+    @Test
+    @DisplayName("Успешный выбор кредитного предложения")
+    void whenLoanOfferSelectedThenStatementUpdated() {
+        when(statementRepository.findById(loanOfferRequest.getStatementId()))
+                .thenReturn(Optional.of(testStatement));
+        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+
+        statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
+
+        assertEquals(ApplicationStatus.APPROVED, testStatement.getStatus());
+        assertEquals(loanOfferRequest, testStatement.getAppliedOffer());
+
+        assertNotNull(testStatement.getStatusHistory());
+        assertEquals(1, testStatement.getStatusHistory().size());
+
+        StatusHistory history = testStatement.getStatusHistory().get(0);
+        assertEquals(ApplicationStatus.APPROVED, history.getStatus());
+        assertEquals(ChangeType.AUTOMATIC, history.getChangeType());
+        assertNotNull(history.getTime());
+
+        verify(statementRepository, times(1)).save(testStatement);
+    }
+
+    @Test
+    @DisplayName("При выборе предложения с несуществующим statementId выбрасывается EntityNotFoundException")
+    void whenStatementNotFoundThenThrowEntityNotFoundException() {
+        UUID nonExistentId = UUID.randomUUID();
+        loanOfferRequest.setStatementId(nonExistentId);
+        when(statementRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> statementService.choosingOneOfTheLoanOffers(loanOfferRequest));
+
+        assertTrue(exception.getMessage().contains(nonExistentId.toString()));
+        verify(statementRepository, never()).save(any(Statement.class));
+    }
+
+    @Test
+    @DisplayName("При null запросе на выбор предложения выбрасывается NullPointerException")
+    void whenLoanOfferRequestIsNullThenThrowNullPointerException() {
+        assertThrows(NullPointerException.class,
+                () -> statementService.choosingOneOfTheLoanOffers(null));
+    }
+
+    @Test
+    @DisplayName("Проверка что история статусов сохраняется корректно")
+    void whenStatusChangesThenHistoryPreservesOrder() {
+        testStatement.setStatusHistory(new ArrayList<>());
+        testStatement.setStatus(ApplicationStatus.PREAPPROVAL);
+
+        when(statementRepository.findById(loanOfferRequest.getStatementId()))
+                .thenReturn(Optional.of(testStatement));
+        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+
+        statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
+
+        assertEquals(1, testStatement.getStatusHistory().size());
+        assertEquals(ApplicationStatus.APPROVED, testStatement.getStatusHistory().get(0).getStatus());
+    }
+
+    @Test
+    @DisplayName("Успешное создание клиента из LoanStatementRequestDto")
+    void whenClientMapperCalledThenClientIsCreated() {
+        when(clientMapper.toClient(loanStatementRequest)).thenReturn(testClient);
+        when(clientRepository.save(any(Client.class))).thenReturn(testClient);
+        when(statementMapper.toStatement(testClient)).thenReturn(testStatement);
+        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
+
+        List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
+
+        assertNotNull(result);
+        verify(clientMapper, times(1)).toClient(loanStatementRequest);
+        verify(clientRepository, times(1)).save(any(Client.class));
+        verify(statementMapper, times(1)).toStatement(testClient);
+        verify(statementRepository, times(1)).save(any(Statement.class));
+    }
+
+    @Test
+    @DisplayName("Проверка что все 4 кредитных предложения получают одинаковый statementId")
+    void whenLoanOffersGeneratedThenAllHaveSameStatementId() {
+        when(clientMapper.toClient(loanStatementRequest)).thenReturn(testClient);
+        when(clientRepository.save(any(Client.class))).thenReturn(testClient);
+        when(statementMapper.toStatement(testClient)).thenReturn(testStatement);
+        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
+
+        List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
+
+        UUID firstStatementId = result.get(0).getStatementId();
+        for (LoanOfferDto offer : result) {
+            assertEquals(firstStatementId, offer.getStatementId());
+        }
+    }
+
+    @Test
+    @DisplayName("При выборе предложения статус заявки меняется с PREAPPROVAL на APPROVED")
+    void whenLoanOfferSelectedThenStatusChangesFromPreapprovalToApproved() {
+        testStatement.setStatus(ApplicationStatus.PREAPPROVAL);
+        when(statementRepository.findById(loanOfferRequest.getStatementId()))
+                .thenReturn(Optional.of(testStatement));
+        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+
+        statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
+
+        assertEquals(ApplicationStatus.APPROVED, testStatement.getStatus());
+        assertNotEquals(ApplicationStatus.PREAPPROVAL, testStatement.getStatus());
+    }
+
+    @Test
+    @DisplayName("При выборе предложения appliedOffer сохраняется корректно")
+    void whenLoanOfferSelectedThenAppliedOfferIsSet() {
+        when(statementRepository.findById(loanOfferRequest.getStatementId()))
+                .thenReturn(Optional.of(testStatement));
+        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+
+        statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
+
+        assertNotNull(testStatement.getAppliedOffer());
+        assertEquals(loanOfferRequest.getRequestedAmount(), testStatement.getAppliedOffer().getRequestedAmount());
+        assertEquals(loanOfferRequest.getTerm(), testStatement.getAppliedOffer().getTerm());
+        assertEquals(loanOfferRequest.getRate(), testStatement.getAppliedOffer().getRate());
+        assertEquals(loanOfferRequest.getIsInsuranceEnabled(), testStatement.getAppliedOffer().getIsInsuranceEnabled());
+        assertEquals(loanOfferRequest.getIsSalaryClient(), testStatement.getAppliedOffer().getIsSalaryClient());
+    }
+
+    @Test
+    @DisplayName("При выборе предложения время изменения статуса не должно быть null")
+    void whenLoanOfferSelectedThenStatusChangeTimeIsNotNull() {
+        when(statementRepository.findById(loanOfferRequest.getStatementId()))
+                .thenReturn(Optional.of(testStatement));
+        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+
+        statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
+
+        StatusHistory history = testStatement.getStatusHistory().get(0);
+        assertNotNull(history.getTime());
+    }
+
+    @Test
+    @DisplayName("Проверка что при создании заявки поле creationDate заполняется")
+    void whenStatementCreatedThenCreationDateIsSet() {
+        when(clientMapper.toClient(loanStatementRequest)).thenReturn(testClient);
+        when(clientRepository.save(any(Client.class))).thenReturn(testClient);
+        when(statementMapper.toStatement(testClient)).thenReturn(testStatement);
+        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
+
+        List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
+
+        assertNotNull(result);
+        verify(statementRepository, times(1)).save(any(Statement.class));
+        assertNotNull(testStatement.getCreationDate());
+    }
+}
