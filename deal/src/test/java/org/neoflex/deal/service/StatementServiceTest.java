@@ -12,7 +12,6 @@ import org.neoflex.deal.client.calculator.CalculatorClientService;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
 import org.neoflex.deal.mapper.ClientMapper;
-import org.neoflex.deal.mapper.StatementMapper;
 import org.neoflex.deal.model.Client;
 import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.enums.ApplicationStatus;
@@ -29,9 +28,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Тесты сервиса StatementService")
 @ExtendWith(MockitoExtension.class)
@@ -48,9 +53,6 @@ class StatementServiceTest {
 
     @Mock
     private ClientMapper clientMapper;
-
-    @Mock
-    private StatementMapper statementMapper;
 
     @InjectMocks
     private StatementService statementService;
@@ -128,9 +130,8 @@ class StatementServiceTest {
     @DisplayName("Успешный расчет возможных условий кредита при корректных данных клиента")
     void whenClientDataIsValidThenReturnFourLoanOffersWithStatementId() {
         when(clientMapper.toClient(loanStatementRequest)).thenReturn(testClient);
-        when(clientRepository.save(any(Client.class))).thenReturn(testClient);
-        when(statementMapper.toStatement(testClient)).thenReturn(testStatement);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(clientRepository.save(any())).thenReturn(testClient);
+        when(statementRepository.save(any())).thenReturn(testStatement);
         when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
 
         List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
@@ -142,9 +143,9 @@ class StatementServiceTest {
                 assertEquals(testStatement.getStatementId(), offer.getStatementId())
         );
 
-        verify(clientRepository, times(1)).save(any(Client.class));
-        verify(statementRepository, times(1)).save(any(Statement.class));
-        verify(calculatorClientService, times(1)).calculateLoanOffers(loanStatementRequest);
+        verify(clientRepository).save(any());
+        verify(statementRepository).save(any());
+        verify(calculatorClientService).calculateLoanOffers(loanStatementRequest);
     }
 
     @Test
@@ -158,12 +159,12 @@ class StatementServiceTest {
     @DisplayName("При сохранении клиента выбрасывается исключение")
     void whenSavingClientFailsThenThrowException() {
         when(clientMapper.toClient(loanStatementRequest)).thenReturn(testClient);
-        when(clientRepository.save(any(Client.class))).thenThrow(new RuntimeException("Database error"));
+        when(clientRepository.save(any())).thenThrow(new RuntimeException("Database error"));
 
         assertThrows(RuntimeException.class,
                 () -> statementService.calculationOfPossibleLoanTerms(loanStatementRequest));
 
-        verify(statementRepository, never()).save(any(Statement.class));
+        verify(statementRepository, never()).save(any());
     }
 
     @Test
@@ -171,7 +172,7 @@ class StatementServiceTest {
     void whenLoanOfferSelectedThenStatementUpdated() {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
 
@@ -186,7 +187,7 @@ class StatementServiceTest {
         assertEquals(ChangeType.AUTOMATIC, history.getChangeType());
         assertNotNull(history.getTime());
 
-        verify(statementRepository, times(1)).save(testStatement);
+        verify(statementRepository).save(testStatement);
     }
 
     @Test
@@ -200,7 +201,7 @@ class StatementServiceTest {
                 () -> statementService.choosingOneOfTheLoanOffers(loanOfferRequest));
 
         assertTrue(exception.getMessage().contains(nonExistentId.toString()));
-        verify(statementRepository, never()).save(any(Statement.class));
+        verify(statementRepository, never()).save(any());
     }
 
     @Test
@@ -218,7 +219,7 @@ class StatementServiceTest {
 
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
 
@@ -230,27 +231,24 @@ class StatementServiceTest {
     @DisplayName("Успешное создание клиента из LoanStatementRequestDto")
     void whenClientMapperCalledThenClientIsCreated() {
         when(clientMapper.toClient(loanStatementRequest)).thenReturn(testClient);
-        when(clientRepository.save(any(Client.class))).thenReturn(testClient);
-        when(statementMapper.toStatement(testClient)).thenReturn(testStatement);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(clientRepository.save(any())).thenReturn(testClient);
+        when(statementRepository.save(any())).thenReturn(testStatement);
         when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
 
         List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
 
         assertNotNull(result);
-        verify(clientMapper, times(1)).toClient(loanStatementRequest);
-        verify(clientRepository, times(1)).save(any(Client.class));
-        verify(statementMapper, times(1)).toStatement(testClient);
-        verify(statementRepository, times(1)).save(any(Statement.class));
+        verify(clientMapper).toClient(loanStatementRequest);
+        verify(clientRepository).save(any());
+        verify(statementRepository).save(any());
     }
 
     @Test
     @DisplayName("Проверка что все 4 кредитных предложения получают одинаковый statementId")
     void whenLoanOffersGeneratedThenAllHaveSameStatementId() {
         when(clientMapper.toClient(loanStatementRequest)).thenReturn(testClient);
-        when(clientRepository.save(any(Client.class))).thenReturn(testClient);
-        when(statementMapper.toStatement(testClient)).thenReturn(testStatement);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(clientRepository.save(any())).thenReturn(testClient);
+        when(statementRepository.save(any())).thenReturn(testStatement);
         when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
 
         List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
@@ -267,7 +265,7 @@ class StatementServiceTest {
         testStatement.setStatus(ApplicationStatus.PREAPPROVAL);
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
 
@@ -280,7 +278,7 @@ class StatementServiceTest {
     void whenLoanOfferSelectedThenAppliedOfferIsSet() {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
 
@@ -297,7 +295,7 @@ class StatementServiceTest {
     void whenLoanOfferSelectedThenStatusChangeTimeIsNotNull() {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
 
@@ -309,15 +307,14 @@ class StatementServiceTest {
     @DisplayName("Проверка что при создании заявки поле creationDate заполняется")
     void whenStatementCreatedThenCreationDateIsSet() {
         when(clientMapper.toClient(loanStatementRequest)).thenReturn(testClient);
-        when(clientRepository.save(any(Client.class))).thenReturn(testClient);
-        when(statementMapper.toStatement(testClient)).thenReturn(testStatement);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(clientRepository.save(any())).thenReturn(testClient);
+        when(statementRepository.save(any())).thenReturn(testStatement);
         when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
 
         List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
 
         assertNotNull(result);
-        verify(statementRepository, times(1)).save(any(Statement.class));
+        verify(statementRepository).save(any());
         assertNotNull(testStatement.getCreationDate());
     }
 }

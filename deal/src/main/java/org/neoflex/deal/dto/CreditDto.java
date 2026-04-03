@@ -1,7 +1,6 @@
 package org.neoflex.deal.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
@@ -58,7 +57,6 @@ public class CreditDto {
 
     @NotNull(message = "График платежей обязателен")
     @Size(min = 1, message = "График платежей не может быть пустым")
-    @Valid
     @Schema(description = "График платежей")
-    private List<@Valid PaymentScheduleElementDto> paymentSchedule;
+    private List<PaymentScheduleElementDto> paymentSchedule;
 }
