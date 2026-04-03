@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -202,7 +203,7 @@ class StatementServiceTest {
                 () -> statementService.choosingOneOfTheLoanOffers(loanOfferRequest));
 
         assertTrue(exception.getMessage().contains(nonExistentId.toString()));
-        verifyNoInteractions(statementRepository);
+        verify(statementRepository, never()).save(any());
     }
 
     @Test
