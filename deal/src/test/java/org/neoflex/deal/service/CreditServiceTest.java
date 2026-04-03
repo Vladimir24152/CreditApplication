@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -312,7 +313,7 @@ class CreditServiceTest {
 
         assertEquals(1, testStatement.getStatusHistory().size());
 
-        StatusHistory history = testStatement.getStatusHistory().get(0);
+        StatusHistory history = testStatement.getStatusHistory().getFirst();
         assertEquals(ApplicationStatus.APPROVED, history.getStatus());
         assertEquals(ChangeType.AUTOMATIC, history.getChangeType());
         assertNotNull(history.getTime());
@@ -350,14 +351,10 @@ class CreditServiceTest {
 
         creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId);
 
-        assertEquals(creditDto.getAmount(), credit.getAmount());
-        assertEquals(creditDto.getTerm(), credit.getTerm());
-        assertEquals(creditDto.getMonthlyPayment(), credit.getMonthlyPayment());
-        assertEquals(creditDto.getRate(), credit.getRate());
-        assertEquals(creditDto.getPsk(), credit.getPsk());
-        assertEquals(creditDto.getIsInsuranceEnabled(), credit.getIsInsuranceEnabled());
-        assertEquals(creditDto.getIsSalaryClient(), credit.getIsSalaryClient());
-        assertEquals(creditDto.getPaymentSchedule(), credit.getPaymentSchedule());
+        assertThat(credit)
+                .usingRecursiveComparison()
+                .ignoringFields("creditId", "creditStatus")
+                .isEqualTo(creditDto);
     }
 
     @Test

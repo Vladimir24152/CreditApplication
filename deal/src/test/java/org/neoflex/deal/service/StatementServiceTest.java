@@ -28,14 +28,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @DisplayName("Тесты сервиса StatementService")
@@ -164,7 +165,7 @@ class StatementServiceTest {
         assertThrows(RuntimeException.class,
                 () -> statementService.calculationOfPossibleLoanTerms(loanStatementRequest));
 
-        verify(statementRepository, never()).save(any());
+        verifyNoInteractions(statementRepository);
     }
 
     @Test
@@ -182,7 +183,7 @@ class StatementServiceTest {
         assertNotNull(testStatement.getStatusHistory());
         assertEquals(1, testStatement.getStatusHistory().size());
 
-        StatusHistory history = testStatement.getStatusHistory().get(0);
+        StatusHistory history = testStatement.getStatusHistory().getFirst();
         assertEquals(ApplicationStatus.APPROVED, history.getStatus());
         assertEquals(ChangeType.AUTOMATIC, history.getChangeType());
         assertNotNull(history.getTime());
@@ -201,7 +202,7 @@ class StatementServiceTest {
                 () -> statementService.choosingOneOfTheLoanOffers(loanOfferRequest));
 
         assertTrue(exception.getMessage().contains(nonExistentId.toString()));
-        verify(statementRepository, never()).save(any());
+        verifyNoInteractions(statementRepository);
     }
 
     @Test
@@ -224,7 +225,7 @@ class StatementServiceTest {
         statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
 
         assertEquals(1, testStatement.getStatusHistory().size());
-        assertEquals(ApplicationStatus.APPROVED, testStatement.getStatusHistory().get(0).getStatus());
+        assertEquals(ApplicationStatus.APPROVED, testStatement.getStatusHistory().getFirst().getStatus());
     }
 
     @Test
@@ -253,10 +254,15 @@ class StatementServiceTest {
 
         List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
 
-        UUID firstStatementId = result.get(0).getStatementId();
+        UUID firstStatementId = result.getFirst().getStatementId();
         for (LoanOfferDto offer : result) {
             assertEquals(firstStatementId, offer.getStatementId());
         }
+
+        verify(clientMapper).toClient(loanStatementRequest);
+        verify(clientRepository).save(any());
+        verify(statementRepository).save(any());
+        verify(calculatorClientService).calculateLoanOffers(loanStatementRequest);
     }
 
     @Test
@@ -282,12 +288,9 @@ class StatementServiceTest {
 
         statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
 
-        assertNotNull(testStatement.getAppliedOffer());
-        assertEquals(loanOfferRequest.getRequestedAmount(), testStatement.getAppliedOffer().getRequestedAmount());
-        assertEquals(loanOfferRequest.getTerm(), testStatement.getAppliedOffer().getTerm());
-        assertEquals(loanOfferRequest.getRate(), testStatement.getAppliedOffer().getRate());
-        assertEquals(loanOfferRequest.getIsInsuranceEnabled(), testStatement.getAppliedOffer().getIsInsuranceEnabled());
-        assertEquals(loanOfferRequest.getIsSalaryClient(), testStatement.getAppliedOffer().getIsSalaryClient());
+        assertThat(testStatement.getAppliedOffer())
+                .usingRecursiveComparison()
+                .isEqualTo(loanOfferRequest);
     }
 
     @Test
@@ -299,7 +302,7 @@ class StatementServiceTest {
 
         statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
 
-        StatusHistory history = testStatement.getStatusHistory().get(0);
+        StatusHistory history = testStatement.getStatusHistory().getFirst();
         assertNotNull(history.getTime());
     }
 
@@ -314,7 +317,11 @@ class StatementServiceTest {
         List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
 
         assertNotNull(result);
-        verify(statementRepository).save(any());
         assertNotNull(testStatement.getCreationDate());
+
+        verify(clientMapper).toClient(loanStatementRequest);
+        verify(clientRepository).save(any());
+        verify(statementRepository).save(any());
+        verify(calculatorClientService).calculateLoanOffers(loanStatementRequest);
     }
 }

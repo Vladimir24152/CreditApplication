@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -176,13 +177,8 @@ class ClientMapperTest {
         ScoringDataDto result = clientMapper.toScoringDataDto(finishRegistrationRequest, statement);
 
         assertNotNull(result.getEmployment());
-        assertEquals(finishRegistrationRequest.getEmployment().getEmployerInn(),
-                result.getEmployment().getEmployerInn());
-        assertEquals(finishRegistrationRequest.getEmployment().getSalary(), result.getEmployment().getSalary());
-        assertEquals(finishRegistrationRequest.getEmployment().getPosition(), result.getEmployment().getPosition());
-        assertEquals(finishRegistrationRequest.getEmployment().getWorkExperienceTotal(),
-                result.getEmployment().getWorkExperienceTotal());
-        assertEquals(finishRegistrationRequest.getEmployment().getWorkExperienceCurrent(),
-                result.getEmployment().getWorkExperienceCurrent());
+        assertThat(result.getEmployment())
+                .usingRecursiveComparison()
+                .isEqualTo(finishRegistrationRequest.getEmployment());
     }
 }

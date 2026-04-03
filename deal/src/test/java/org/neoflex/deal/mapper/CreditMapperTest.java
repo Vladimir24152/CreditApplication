@@ -13,9 +13,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @DisplayName("Тесты маппера CreditMapper")
 class CreditMapperTest {
@@ -58,16 +58,13 @@ class CreditMapperTest {
         Credit result = creditMapper.toCredit(creditDto, status);
 
         assertNotNull(result);
-        assertNull(result.getCreditId());
-        assertEquals(creditDto.getAmount(), result.getAmount());
-        assertEquals(creditDto.getTerm(), result.getTerm());
-        assertEquals(creditDto.getMonthlyPayment(), result.getMonthlyPayment());
-        assertEquals(creditDto.getRate(), result.getRate());
-        assertEquals(creditDto.getPsk(), result.getPsk());
-        assertEquals(creditDto.getIsInsuranceEnabled(), result.getIsInsuranceEnabled());
-        assertEquals(creditDto.getIsSalaryClient(), result.getIsSalaryClient());
-        assertEquals(creditDto.getPaymentSchedule(), result.getPaymentSchedule());
-        assertEquals(CreditStatus.CALCULATED, result.getCreditStatus());
+
+        assertEquals(status, result.getCreditStatus());
+
+        assertThat(result)
+                .usingRecursiveComparison()
+                .ignoringFields("creditId", "creditStatus")
+                .isEqualTo(creditDto);
     }
 
     @Test
@@ -87,13 +84,11 @@ class CreditMapperTest {
         assertNotNull(result.getPaymentSchedule());
         assertEquals(1, result.getPaymentSchedule().size());
 
-        PaymentScheduleElementDto firstElementResult = result.getPaymentSchedule().get(0);
-        PaymentScheduleElementDto firstElementRequest = creditDto.getPaymentSchedule().get(0);
+        PaymentScheduleElementDto firstElementResult = result.getPaymentSchedule().getFirst();
+        PaymentScheduleElementDto firstElementRequest = creditDto.getPaymentSchedule().getFirst();
 
-        assertEquals(1, firstElementResult.getNumber());
-        assertEquals(firstElementRequest.getTotalPayment(), firstElementResult.getTotalPayment());
-        assertEquals(firstElementRequest.getPrincipalPayment(), firstElementResult.getPrincipalPayment());
-        assertEquals(firstElementRequest.getInterestPayment(), firstElementResult.getInterestPayment());
-        assertEquals(firstElementRequest.getRemainingDebt(), firstElementResult.getRemainingDebt());
+        assertThat(firstElementResult)
+                .usingRecursiveComparison()
+                .isEqualTo(firstElementRequest);
     }
 }

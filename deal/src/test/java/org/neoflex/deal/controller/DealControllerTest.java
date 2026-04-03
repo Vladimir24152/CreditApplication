@@ -33,8 +33,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -171,7 +171,7 @@ class DealControllerTest {
 
         result.andExpect(status().isBadRequest());
 
-        verify(statementService, never()).calculationOfPossibleLoanTerms(any(LoanStatementRequestDto.class));
+        verifyNoInteractions(statementService);
     }
 
     @Test
@@ -203,7 +203,7 @@ class DealControllerTest {
 
         result.andExpect(status().isBadRequest());
 
-        verify(statementService, never()).choosingOneOfTheLoanOffers(any(LoanOfferDto.class));
+        verifyNoInteractions(statementService);
     }
 
     @Test
@@ -241,7 +241,7 @@ class DealControllerTest {
 
         result.andExpect(status().isBadRequest());
 
-        verify(creditService, never()).completionOfRegistrationAndFullCreditCalculation(any(), any());
+        verifyNoInteractions(creditService);
     }
 
     @Test
