@@ -7,7 +7,6 @@ import org.neoflex.deal.client.calculator.CalculatorClientService;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
 import org.neoflex.deal.mapper.ClientMapper;
-import org.neoflex.deal.mapper.StatementMapper;
 import org.neoflex.deal.model.Client;
 import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.jsonb.StatusHistory;
@@ -20,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.neoflex.deal.model.enums.ApplicationStatus.APPROVED;
+import static org.neoflex.deal.model.enums.ApplicationStatus.PREAPPROVAL;
 import static org.neoflex.deal.model.enums.ChangeType.AUTOMATIC;
 
 @Service
@@ -33,7 +33,6 @@ public class StatementService {
     private final CalculatorClientService calculatorClientService;
 
     private final ClientMapper clientMapper;
-    private final StatementMapper statementMapper;
 
     @Transactional
     public List<LoanOfferDto> calculationOfPossibleLoanTerms(LoanStatementRequestDto request){
@@ -43,8 +42,23 @@ public class StatementService {
         }
 
         Client savedClient = clientRepository.save(clientMapper.toClient(request));
+        log.info("Клиент сохранен: clientId={}", savedClient.getClientId());
 
-        Statement savedStatement = statementRepository.save(statementMapper.toStatement(savedClient));
+        Statement statement = Statement.builder()
+                .status(PREAPPROVAL)
+                .statusHistory(List.of(StatusHistory.builder()
+                        .status(PREAPPROVAL)
+                        .time(LocalDateTime.now())
+                        .changeType(AUTOMATIC)
+                        .build()))
+                .client(savedClient)
+                .build();
+
+        Statement savedStatement = statementRepository.save(statement);
+
+        log.info("Заявка создана: statementId={}, статус={}, clientId={}",
+                savedStatement.getStatementId(), PREAPPROVAL, savedClient.getClientId());
+
 
         List<LoanOfferDto> offers = calculatorClientService.calculateLoanOffers(request);
 
@@ -74,5 +88,6 @@ public class StatementService {
         statement.setAppliedOffer(request);
 
         statementRepository.save(statement);
+        log.info("Заявка {} успешно обновлена: статус = {}", request.getStatementId(), APPROVED);
     }
 }

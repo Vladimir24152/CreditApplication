@@ -16,6 +16,7 @@ import org.neoflex.deal.dto.PaymentScheduleElementDto;
 import org.neoflex.deal.dto.ScoringDataDto;
 import org.neoflex.deal.mapper.ClientMapper;
 import org.neoflex.deal.mapper.CreditMapper;
+import org.neoflex.deal.model.Client;
 import org.neoflex.deal.model.Credit;
 import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.enums.ApplicationStatus;
@@ -23,7 +24,9 @@ import org.neoflex.deal.model.enums.ChangeType;
 import org.neoflex.deal.model.enums.CreditStatus;
 import org.neoflex.deal.model.enums.Gender;
 import org.neoflex.deal.model.enums.MaritalStatus;
+import org.neoflex.deal.model.jsonb.Passport;
 import org.neoflex.deal.model.jsonb.StatusHistory;
+import org.neoflex.deal.repository.ClientRepository;
 import org.neoflex.deal.repository.CreditRepository;
 import org.neoflex.deal.repository.StatementRepository;
 
@@ -35,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -42,7 +46,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,6 +58,9 @@ class CreditServiceTest {
 
     @Mock
     private CreditRepository creditRepository;
+
+    @Mock
+    private ClientRepository clientRepository;
 
     @Mock
     private CalculatorClientService calculatorClientService;
@@ -72,12 +78,15 @@ class CreditServiceTest {
     private Statement testStatement;
     private CreditDto creditDto;
     private Credit credit;
+    private Client client;
     private UUID statementId;
+    private UUID clientId;
     private ScoringDataDto scoringDataDto;
 
     @BeforeEach
     void setUp() {
         statementId = UUID.randomUUID();
+        clientId = UUID.randomUUID();
 
         finishRequest = FinishRegistrationRequestDto.builder()
                 .gender(Gender.MALE)
@@ -95,8 +104,28 @@ class CreditServiceTest {
                 .accountNumber("40817810000000000001")
                 .build();
 
+        client = Client.builder()
+                .clientId(clientId)
+                .lastName("Ivanov")
+                .firstName("Ivan")
+                .middleName("Ivanovich")
+                .birthDate(LocalDate.of(1990, 1, 1))
+                .email("ivan@example.com")
+                .gender(Gender.MALE)
+                .maritalStatus(MaritalStatus.MARRIED)
+                .dependentAmount(2)
+                .passport(Passport.builder()
+                        .series("1234")
+                        .number("567890")
+                        .issueBranch(null)
+                        .issueDate(null)
+                        .build())
+                .accountNumber("40817810000000000001")
+                .build();
+
         testStatement = Statement.builder()
                 .statementId(statementId)
+                .client(client)
                 .status(ApplicationStatus.PREAPPROVAL)
                 .statusHistory(new ArrayList<>())
                 .creationDate(LocalDateTime.now())
@@ -124,17 +153,18 @@ class CreditServiceTest {
                 .paymentSchedule(paymentSchedule)
                 .build();
 
-        credit = new Credit();
-        credit.setCreditId(UUID.randomUUID());
-        credit.setAmount(BigDecimal.valueOf(1000000));
-        credit.setTerm(12);
-        credit.setMonthlyPayment(BigDecimal.valueOf(88848.89));
-        credit.setRate(BigDecimal.valueOf(15.0));
-        credit.setPsk(BigDecimal.valueOf(1066186.68));
-        credit.setIsInsuranceEnabled(true);
-        credit.setIsSalaryClient(true);
-        credit.setPaymentSchedule(paymentSchedule);
-        credit.setCreditStatus(CreditStatus.CALCULATED);
+        credit = Credit.builder()
+                .creditId(UUID.randomUUID())
+                .amount(BigDecimal.valueOf(1000000))
+                .term(12)
+                .monthlyPayment(BigDecimal.valueOf(88848.89))
+                .rate(BigDecimal.valueOf(15.0))
+                .psk(BigDecimal.valueOf(1066186.68))
+                .isInsuranceEnabled(true)
+                .isSalaryClient(true)
+                .paymentSchedule(paymentSchedule)
+                .creditStatus(CreditStatus.CALCULATED)
+                .build();
 
         scoringDataDto = ScoringDataDto.builder()
                 .amount(BigDecimal.valueOf(1000000))
@@ -150,7 +180,7 @@ class CreditServiceTest {
                 .passportIssueBranch("123-456")
                 .maritalStatus(MaritalStatus.MARRIED)
                 .dependentAmount(2)
-                .employment(org.neoflex.deal.dto.EmploymentDto.builder()
+                .employment(EmploymentDto.builder()
                         .employerInn("1234567890")
                         .salary(BigDecimal.valueOf(100000))
                         .position(org.neoflex.deal.model.enums.Position.SPECIALIST)
@@ -169,18 +199,22 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
         when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
-        when(creditMapper.toCreditDto(creditDto)).thenReturn(credit);
-        when(creditRepository.save(any(Credit.class))).thenReturn(credit);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId);
 
-        verify(statementRepository, times(1)).findById(statementId);
-        verify(clientMapper, times(1)).toScoringDataDto(finishRequest, testStatement);
-        verify(calculatorClientService, times(1)).calculateCredit(scoringDataDto);
-        verify(creditMapper, times(1)).toCreditDto(creditDto);
-        verify(creditRepository, times(1)).save(any(Credit.class));
-        verify(statementRepository, times(1)).save(testStatement);
+        verify(statementRepository).findById(statementId);
+        verify(clientMapper).toScoringDataDto(finishRequest, testStatement);
+        verify(calculatorClientService).calculateCredit(scoringDataDto);
+        verify(creditMapper).toCredit(creditDto, CreditStatus.CALCULATED);
+        verify(creditRepository).save(any());
+        verify(clientRepository).findById(clientId);
+        verify(clientRepository).save(any());
+        verify(statementRepository).save(testStatement);
     }
 
     @Test
@@ -200,8 +234,27 @@ class CreditServiceTest {
                 () -> creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, nonExistentId));
 
         assertTrue(exception.getMessage().contains(nonExistentId.toString()));
-        verify(creditRepository, never()).save(any(Credit.class));
-        verify(statementRepository, never()).save(any(Statement.class));
+        verify(creditRepository, never()).save(any());
+        verify(statementRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("При несуществующем clientId выбрасывается EntityNotFoundException")
+    void whenClientNotFoundThenThrowEntityNotFoundException() {
+        when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
+        when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
+        when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId));
+
+        assertTrue(exception.getMessage().contains(clientId.toString()));
+        verify(statementRepository).findById(statementId);
+        verify(creditRepository).save(any());
+        verify(statementRepository, never()).save(any());
     }
 
     @Test
@@ -210,15 +263,15 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
         when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
-        when(creditMapper.toCreditDto(creditDto)).thenReturn(credit);
-        when(creditRepository.save(any(Credit.class))).thenThrow(new RuntimeException("Database error"));
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenThrow(new RuntimeException("Database error"));
 
         assertThrows(RuntimeException.class,
                 () -> creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId));
 
-        verify(statementRepository, times(1)).findById(statementId);
-        verify(creditRepository, times(1)).save(any(Credit.class));
-        verify(statementRepository, never()).save(any(Statement.class));
+        verify(statementRepository).findById(statementId);
+        verify(creditRepository).save(any());
+        verify(statementRepository, never()).save(any());
     }
 
     @Test
@@ -227,9 +280,11 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
         when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
-        when(creditMapper.toCreditDto(creditDto)).thenReturn(credit);
-        when(creditRepository.save(any(Credit.class))).thenReturn(credit);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         assertEquals(ApplicationStatus.PREAPPROVAL, testStatement.getStatus());
 
@@ -246,9 +301,11 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
         when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
-        when(creditMapper.toCreditDto(creditDto)).thenReturn(credit);
-        when(creditRepository.save(any(Credit.class))).thenReturn(credit);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         assertEquals(0, testStatement.getStatusHistory().size());
 
@@ -256,7 +313,7 @@ class CreditServiceTest {
 
         assertEquals(1, testStatement.getStatusHistory().size());
 
-        StatusHistory history = testStatement.getStatusHistory().get(0);
+        StatusHistory history = testStatement.getStatusHistory().getFirst();
         assertEquals(ApplicationStatus.APPROVED, history.getStatus());
         assertEquals(ChangeType.AUTOMATIC, history.getChangeType());
         assertNotNull(history.getTime());
@@ -268,13 +325,15 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
         when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
-        when(creditMapper.toCreditDto(creditDto)).thenReturn(credit);
-        when(creditRepository.save(any(Credit.class))).thenReturn(credit);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId);
 
-        verify(creditRepository, times(1)).save(any(Credit.class));
+        verify(creditRepository).save(any());
         assertEquals(CreditStatus.CALCULATED, credit.getCreditStatus());
     }
 
@@ -284,20 +343,78 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
         when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
-        when(creditMapper.toCreditDto(creditDto)).thenReturn(credit);
-        when(creditRepository.save(any(Credit.class))).thenReturn(credit);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId);
 
-        assertEquals(creditDto.getAmount(), credit.getAmount());
-        assertEquals(creditDto.getTerm(), credit.getTerm());
-        assertEquals(creditDto.getMonthlyPayment(), credit.getMonthlyPayment());
-        assertEquals(creditDto.getRate(), credit.getRate());
-        assertEquals(creditDto.getPsk(), credit.getPsk());
-        assertEquals(creditDto.getIsInsuranceEnabled(), credit.getIsInsuranceEnabled());
-        assertEquals(creditDto.getIsSalaryClient(), credit.getIsSalaryClient());
-        assertEquals(creditDto.getPaymentSchedule(), credit.getPaymentSchedule());
+        assertThat(credit)
+                .usingRecursiveComparison()
+                .ignoringFields("creditId", "creditStatus")
+                .isEqualTo(creditDto);
+    }
+
+    @Test
+    @DisplayName("При успешном расчете паспорт клиента обновляется данными из запроса")
+    void whenCreditCalculatedThenClientPassportIsUpdated() {
+        assertNull(client.getPassport().getIssueBranch());
+        assertNull(client.getPassport().getIssueDate());
+
+        when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
+        when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
+        when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
+
+        creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId);
+
+        verify(clientRepository).save(client);
+        assertEquals("123-456", client.getPassport().getIssueBranch());
+        assertEquals(LocalDate.of(2010, 5, 15), client.getPassport().getIssueDate());
+    }
+
+    @Test
+    @DisplayName("При успешном расчете серия и номер паспорта не изменяются")
+    void whenCreditCalculatedThenPassportSeriesAndNumberRemainUnchanged() {
+        String originalSeries = client.getPassport().getSeries();
+        String originalNumber = client.getPassport().getNumber();
+
+        when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
+        when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
+        when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
+
+        creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId);
+
+        assertEquals(originalSeries, client.getPassport().getSeries());
+        assertEquals(originalNumber, client.getPassport().getNumber());
+    }
+
+    @Test
+    @DisplayName("При успешном расчете клиент сохраняется в репозитории")
+    void whenCreditCalculatedThenClientIsSaved() {
+        when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
+        when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
+        when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
+
+        creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId);
+
+        verify(clientRepository).save(client);
     }
 
     @Test
@@ -306,13 +423,15 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
         when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
-        when(creditMapper.toCreditDto(creditDto)).thenReturn(credit);
-        when(creditRepository.save(any(Credit.class))).thenReturn(credit);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId);
 
-        verify(calculatorClientService, times(1)).calculateCredit(scoringDataDto);
+        verify(calculatorClientService).calculateCredit(scoringDataDto);
     }
 
     @Test
@@ -321,13 +440,15 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
         when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
-        when(creditMapper.toCreditDto(creditDto)).thenReturn(credit);
-        when(creditRepository.save(any(Credit.class))).thenReturn(credit);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId);
 
-        verify(clientMapper, times(1)).toScoringDataDto(finishRequest, testStatement);
+        verify(clientMapper).toScoringDataDto(finishRequest, testStatement);
     }
 
     @Test
@@ -336,13 +457,15 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
         when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
-        when(creditMapper.toCreditDto(creditDto)).thenReturn(credit);
-        when(creditRepository.save(any(Credit.class))).thenReturn(credit);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         creditService.completionOfRegistrationAndFullCreditCalculation(finishRequest, statementId);
 
-        verify(statementRepository, times(1)).save(testStatement);
+        verify(statementRepository).save(testStatement);
     }
 
     @Test
@@ -351,9 +474,11 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
         when(calculatorClientService.calculateCredit(scoringDataDto)).thenReturn(creditDto);
-        when(creditMapper.toCreditDto(creditDto)).thenReturn(credit);
-        when(creditRepository.save(any(Credit.class))).thenReturn(credit);
-        when(statementRepository.save(any(Statement.class))).thenReturn(testStatement);
+        when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
+        when(creditRepository.save(any())).thenReturn(credit);
+        when(clientRepository.findById(clientId)).thenReturn(Optional.of(client));
+        when(clientRepository.save(any())).thenReturn(client);
+        when(statementRepository.save(any())).thenReturn(testStatement);
 
         assertNull(testStatement.getCredit());
 

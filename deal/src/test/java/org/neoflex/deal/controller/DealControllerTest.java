@@ -33,9 +33,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -149,7 +148,7 @@ class DealControllerTest {
                 .andExpect(jsonPath("$[0].rate", is(12.5)))
                 .andExpect(jsonPath("$[1].rate", is(14.0)));
 
-        verify(statementService, times(1)).calculationOfPossibleLoanTerms(any(LoanStatementRequestDto.class));
+        verify(statementService).calculationOfPossibleLoanTerms(any(LoanStatementRequestDto.class));
     }
 
     @Test
@@ -172,7 +171,7 @@ class DealControllerTest {
 
         result.andExpect(status().isBadRequest());
 
-        verify(statementService, never()).calculationOfPossibleLoanTerms(any(LoanStatementRequestDto.class));
+        verifyNoInteractions(statementService);
     }
 
     @Test
@@ -186,7 +185,7 @@ class DealControllerTest {
 
         result.andExpect(status().isOk());
 
-        verify(statementService, times(1)).choosingOneOfTheLoanOffers(any(LoanOfferDto.class));
+        verify(statementService).choosingOneOfTheLoanOffers(any(LoanOfferDto.class));
     }
 
     @Test
@@ -204,7 +203,7 @@ class DealControllerTest {
 
         result.andExpect(status().isBadRequest());
 
-        verify(statementService, never()).choosingOneOfTheLoanOffers(any(LoanOfferDto.class));
+        verifyNoInteractions(statementService);
     }
 
     @Test
@@ -219,7 +218,7 @@ class DealControllerTest {
 
         result.andExpect(status().isOk());
 
-        verify(creditService, times(1)).completionOfRegistrationAndFullCreditCalculation(
+        verify(creditService).completionOfRegistrationAndFullCreditCalculation(
                 any(FinishRegistrationRequestDto.class), eq(statementId));
     }
 
@@ -242,7 +241,7 @@ class DealControllerTest {
 
         result.andExpect(status().isBadRequest());
 
-        verify(creditService, never()).completionOfRegistrationAndFullCreditCalculation(any(), any());
+        verifyNoInteractions(creditService);
     }
 
     @Test
@@ -258,7 +257,7 @@ class DealControllerTest {
 
         result.andExpect(status().isNotFound());
 
-        verify(creditService, times(1)).completionOfRegistrationAndFullCreditCalculation(any(), any());
+        verify(creditService).completionOfRegistrationAndFullCreditCalculation(any(), any());
     }
 
     @Test
@@ -274,6 +273,6 @@ class DealControllerTest {
 
         result.andExpect(status().isBadRequest());
 
-        verify(creditService, times(1)).completionOfRegistrationAndFullCreditCalculation(any(), any());
+        verify(creditService).completionOfRegistrationAndFullCreditCalculation(any(), any());
     }
 }

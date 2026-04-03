@@ -74,7 +74,7 @@ public class Statement {
     @Column(name = "sign_date")
     private LocalDateTime signDate;
 
-    @Comment("Не понимаю что это уточнить")
+    @Comment("Одноразовый код подтверждения для подписания кредитного договора")
     @Column(name = "ses_сode")
     private String sesCode;
 
