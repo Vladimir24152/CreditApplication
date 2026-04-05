@@ -228,6 +228,6 @@ public class DealController {
             @Valid @RequestBody FinishRegistrationRequestDto request,
             @PathVariable UUID statementId
     ){
-        creditService.completionOfRegistrationAndFullCreditCalculation(request,statementId);
+        creditService.completeOfRegistrationAndFullCalculation(request, statementId);
     }
 }
