@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   calculator:
     build:
@@ -8,3 +6,52 @@ services:
     container_name: calculator-service
     ports:
       - "8080:8080"
+    networks:
+      - credit-network
+
+  postgres_db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=demo_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - credit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d demo_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  deal:
+    build:
+      context: ./deal
+      dockerfile: Dockerfile
+    container_name: deal-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_db:5432/demo_db
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=pass
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_SHOW_SQL=true
+      - CALCULATOR_SERVICE_URL=http://calculator:8080
+    networks:
+      - credit-network
+
+networks:
+  credit-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
