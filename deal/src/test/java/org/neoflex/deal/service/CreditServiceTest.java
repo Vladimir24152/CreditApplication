@@ -67,6 +67,9 @@ class CreditServiceTest {
     @Mock
     private CreditMapper creditMapper;
 
+    @Mock
+    private ClientService clientService;
+
     @InjectMocks
     private CreditService creditService;
 

@@ -67,9 +67,7 @@ public class CreditService {
 
         log.info("Заявка обновлена: id={}, статус={}", statement.getStatementId(), APPROVED);
 
-        clientService.updateClientPassport(statement.getClient().getClientId(),
-                request.getPassportIssueBranch(),
-                request.getPassportIssueDate());
+        clientService.updateClient(statement.getClient().getClientId(), request);
 
         statementRepository.save(statement);
         log.info("Завершение регистрации для заявки {} успешно выполнено", statementId);

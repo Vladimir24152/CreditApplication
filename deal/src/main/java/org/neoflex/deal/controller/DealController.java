@@ -81,6 +81,13 @@ public class DealController {
                                             """
                             )
                     )
+            ),
+            @ApiResponse(responseCode = "502",
+                    description = "получает некорректный ответ от стороннего сервиса",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class)
+                    )
             )
     })
     @PostMapping("/statement")
