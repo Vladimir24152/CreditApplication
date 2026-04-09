@@ -1,10 +1,9 @@
-package org.neoflex.deal.dto.response;
+package org.neoflex.calculator.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-
 
 @Getter
 @AllArgsConstructor

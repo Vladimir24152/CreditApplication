@@ -1,10 +1,10 @@
-package org.neoflex.deal.config;
+package org.neoflex.statement.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.deal.client.calculator.CalculatorClient;
-import org.neoflex.deal.dto.response.HttpErrorInternalServiceResponse;
-import org.neoflex.deal.exception.InternalServiceException;
+import org.neoflex.statement.client.DealClient;
+import org.neoflex.statement.dto.response.HttpErrorInternalServiceResponse;
+import org.neoflex.statement.exception.InternalServiceException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,45 +17,41 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Configuration
-public class CalculatorClientConfig {
-
-    @Value("${calculator.service.url:http://localhost:8080}")
-    private String calculatorServiceUrl;
-
-    private final String serviceName = "calculator service";
-
+public class DealClientConfig {
+    private final String serviceName = "deal service";
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
-
+    @Value("${deal.service.url:http://localhost:8081}")
+    private String serviceUrl;
 
     @Bean
-    public CalculatorClient calculatorClient() {
+    public DealClient dealClient() {
         RestClient restClient = RestClient.builder()
-                .baseUrl(calculatorServiceUrl)
+                .baseUrl(serviceUrl)
                 .defaultStatusHandler(HttpStatusCode::isError,
                         (request, response) -> {
                             HttpErrorInternalServiceResponse errorResponse = null;
                             String message;
 
                             try {
-                                String errorBody = new String(response.getBody().readAllBytes(),StandardCharsets.UTF_8);
+                                String errorBody = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
 
                                 errorResponse = objectMapper.readValue(errorBody,
                                         HttpErrorInternalServiceResponse.class);
 
                                 log.error("RAW ERROR BODY: {}", errorBody);
 
-                                message = String.format("Произошла внутренняя ошибка сервера: Ошибка при вызове %s",serviceName);
+                                message = String.format("Произошла внутренняя ошибка сервера: Ошибка при вызове %s", serviceName);
                             } catch (Exception e) {
                                 message = "Не удалось прочитать тело ошибки";
                             }
 
-                            throw new InternalServiceException(serviceName,message,errorResponse);
+                            throw new InternalServiceException(serviceName, message, errorResponse);
                         })
                 .build();
 
         RestClientAdapter adapter = RestClientAdapter.create(restClient);
         HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
 
-        return factory.createClient(CalculatorClient.class);
+        return factory.createClient(DealClient.class);
     }
 }

@@ -1,0 +1,18 @@
+server:
+  port: 8082
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+
+logging:
+  level:
+    org.neoflex.deal: DEBUG
+
+deal:
+  service:
+    url: ${DEAL_SERVICE_URL:http://deal:8081}

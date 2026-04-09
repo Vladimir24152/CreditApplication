@@ -49,6 +49,19 @@ services:
     networks:
       - credit-network
 
+  statement:
+    build:
+      context: ./statement
+      dockerfile: Dockerfile
+    container_name: statement-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - DEAL_SERVICE_URL=http://deal:8081
+    networks:
+      - credit-network
+
 networks:
   credit-network:
     driver: bridge

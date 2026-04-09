@@ -1,4 +1,4 @@
-package org.neoflex.deal.dto.response;
+package org.neoflex.statement.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
