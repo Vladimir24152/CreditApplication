@@ -11,7 +11,10 @@ springdoc:
 
 logging:
   level:
-    org.neoflex.deal: DEBUG
+    org.neoflex.statement: DEBUG      # ← ДОБАВИТЬ (ваш пакет)
+    org.neoflex.statement.interceptor: DEBUG  # ← ДОБАВИТЬ (интерцепторы)
+    org.springframework.web: INFO
+    org.springframework.web.servlet: INFO
 
 deal:
   service:

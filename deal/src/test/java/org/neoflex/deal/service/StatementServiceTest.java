@@ -214,6 +214,17 @@ class StatementServiceTest {
     }
 
     @Test
+    @DisplayName("При статусе заявки не PREAPPROVAL выбрасывается IllegalStateException")
+    void whenStatementStatusIsNotPreapprovalThenThrowIllegalStateException() {
+        testStatement.setStatus(ApplicationStatus.APPROVED);
+        when(statementRepository.findById(loanOfferRequest.getStatementId()))
+                .thenReturn(Optional.of(testStatement));
+
+        assertThrows(IllegalStateException.class,
+                () -> statementService.choosingOneOfTheLoanOffers(loanOfferRequest));
+    }
+
+    @Test
     @DisplayName("Проверка что история статусов сохраняется корректно")
     void whenStatusChangesThenHistoryPreservesOrder() {
         testStatement.setStatusHistory(new ArrayList<>());

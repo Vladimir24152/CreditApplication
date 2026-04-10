@@ -79,6 +79,14 @@ public class StatementService {
                         String.format("Не найдена заявка с id указанным в запросе: %s",request.getStatementId()))
                 );
 
+        if (statement.getStatus() != PREAPPROVAL) {
+            throw new IllegalStateException(
+                    String.format("Некорректный статус заявки %s для выбора кредитного предложения. Ожидаемый статус %s," +
+                                    " текущий статус: %s",
+                            statement.getStatementId(), PREAPPROVAL, statement.getStatus())
+            );
+        }
+
         statement.setStatus(APPROVED);
 
         List<StatusHistory> statusHistory = statement.getStatusHistory();

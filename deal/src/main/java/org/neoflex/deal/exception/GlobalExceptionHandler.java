@@ -50,6 +50,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<HttpErrorInternalServiceResponse> handlerIllegalStateException(
+            IllegalStateException e) {
+
+        return buildErrorInternalServiceResponse(
+                HttpStatus.CONFLICT,
+                "ILLEGAL_STATE",
+                e.getMessage()
+        );
+    }
+
     @ExceptionHandler({NullPointerException.class})
     public ResponseEntity<HttpErrorInternalServiceResponse> handlerIllegalArgumentException (Exception e) {
 

@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.neoflex.deal.model.enums.ApplicationStatus.APPROVED;
+import static org.neoflex.deal.model.enums.ApplicationStatus.CC_APPROVED;
 import static org.neoflex.deal.model.enums.ChangeType.AUTOMATIC;
 
 @Service
@@ -52,6 +53,14 @@ public class CreditService {
                         String.format("Не найдена заявка с id указанным в запросе: %s",statementId))
                 );
 
+        if (statement.getStatus() != APPROVED) {
+            throw new IllegalStateException(
+                    String.format("Некорректный статус заявки %s для завершения регистрации. Ожидаемый статус %s," +
+                                    " текущий статус: %s",
+                            statementId, APPROVED, statement.getStatus())
+            );
+        }
+
         ScoringDataDto scoringDataDto = clientMapper.toScoringDataDto(request,statement);
 
         CreditDto creditDto = calculatorClientService.calculateCredit(scoringDataDto);
@@ -61,8 +70,8 @@ public class CreditService {
         statement.setCredit(credit);
         log.info("Сохранен кредит: id={}, статус={}", credit.getCreditId(), credit.getCreditStatus());
 
-        statement.setStatus(APPROVED);
-        statement.getStatusHistory().add(new StatusHistory(APPROVED, LocalDateTime.now(), AUTOMATIC));
+        statement.setStatus(CC_APPROVED);
+        statement.getStatusHistory().add(new StatusHistory(CC_APPROVED, LocalDateTime.now(), AUTOMATIC));
 
 
         log.info("Заявка обновлена: id={}, статус={}", statement.getStatementId(), APPROVED);

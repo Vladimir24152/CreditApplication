@@ -140,6 +140,13 @@ public class DealController {
                             )
                     )
             ),
+            @ApiResponse(responseCode = "409",
+                    description = "Текущий статус заявки не совпадает с ожидаемым",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500",
                     description = "Внутренняя ошибка сервера при обработке запроса",
                     content = @Content(
@@ -208,6 +215,13 @@ public class DealController {
                                              }
                                             """
                             )
+                    )
+            ),
+            @ApiResponse(responseCode = "409",
+                    description = "Текущий статус заявки не совпадает с ожидаемым",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class)
                     )
             ),
             @ApiResponse(responseCode = "500",
