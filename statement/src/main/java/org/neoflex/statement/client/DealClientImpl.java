@@ -1,7 +1,6 @@
-package org.neoflex.statement.service;
+package org.neoflex.statement.client;
 
 import lombok.RequiredArgsConstructor;
-import org.neoflex.statement.client.DealClient;
 import org.neoflex.statement.dto.LoanOfferDto;
 import org.neoflex.statement.dto.LoanStatementRequestDto;
 import org.springframework.stereotype.Service;
@@ -10,15 +9,15 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DealClientService {
+public class DealClientImpl {
 
     private final DealClient dealClient;
 
-    List<LoanOfferDto> calculateOfPossibleLoanTerms(LoanStatementRequestDto request) {
+    public List<LoanOfferDto> calculateOfPossibleLoanTerms(LoanStatementRequestDto request) {
         return dealClient.calculateOfPossibleLoanTerms(request);
     }
 
-    void selectOneOfTheLoanOffers(LoanOfferDto request) {
-        dealClient.selectOneOfTheLoanOffers(request);
+    public void selectOffer(LoanOfferDto request) {
+        dealClient.selectOffer(request);
     }
 }

@@ -6,12 +6,10 @@ import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -28,18 +26,16 @@ public class LoggingInnerInterceptor implements ClientHttpRequestInterceptor {
         );
 
         ClientHttpResponse response = execution.execute(request, body);
+        byte[] responseBody = StreamUtils.copyToByteArray(response.getBody());
 
-        String responseBody = new BufferedReader(
-                new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        String responseBodyString = new String(responseBody, StandardCharsets.UTF_8);
 
-        log.info(">>> Получен ответ от внешнего сервиса: Status = {}, Headers = {}, Request Body = {}",
+        log.info(">>> Получен ответ от внешнего сервиса: Status = {}, Headers = {}, Response Body = {}",
                 response.getStatusCode(),
                 response.getHeaders(),
-                responseBody
+                responseBodyString
         );
 
-        return response;
+        return new BufferingClientHttpResponse(response, responseBody);
     }
 }

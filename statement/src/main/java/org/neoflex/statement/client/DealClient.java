@@ -13,5 +13,5 @@ public interface DealClient {
     List<LoanOfferDto> calculateOfPossibleLoanTerms(@RequestBody LoanStatementRequestDto request);
 
     @PostExchange("/api/v1/deal/offer/select")
-    void selectOneOfTheLoanOffers(@RequestBody LoanOfferDto request);
+    void selectOffer(@RequestBody LoanOfferDto request);
 }

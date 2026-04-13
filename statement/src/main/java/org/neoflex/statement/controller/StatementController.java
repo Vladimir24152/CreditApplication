@@ -2,17 +2,20 @@ package org.neoflex.statement.controller;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.neoflex.statement.dto.LoanOfferDto;
 import org.neoflex.statement.dto.LoanStatementRequestDto;
 import org.neoflex.statement.dto.response.HttpErrorInternalServiceResponse;
 import org.neoflex.statement.service.StatementService;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,7 +37,7 @@ public class StatementController {
                     description = "Кредитные предложения успешно сформированы",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = LoanOfferDto.class)
+                            array = @ArraySchema(schema = @Schema(implementation = LoanOfferDto.class))
                     )
             ),
             @ApiResponse(responseCode = "400",
@@ -60,8 +63,8 @@ public class StatementController {
             )
     })
     @PostMapping
-    public List<LoanOfferDto> preScoringAndGetOffers(LoanStatementRequestDto request) {
-        return statementService.preScoringAndGetOffers(request);
+    public List<LoanOfferDto> preScoringAndGetOffers(@Valid @RequestBody LoanStatementRequestDto request) {
+        return statementService.getOffers(request);
     }
 
     @Operation(summary = "Выбор одного из кредитных предложений",
@@ -101,7 +104,7 @@ public class StatementController {
             )
     })
     @PostMapping("/offer")
-    void selectOffer(LoanOfferDto request) {
+    void selectOffer(@Valid @RequestBody LoanOfferDto request) {
         statementService.selectOffer(request);
     }
 

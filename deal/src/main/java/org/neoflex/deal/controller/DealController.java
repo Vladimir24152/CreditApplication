@@ -91,8 +91,8 @@ public class DealController {
             )
     })
     @PostMapping("/statement")
-    public List<LoanOfferDto> calculationOfPossibleLoanTerms(@Valid @RequestBody LoanStatementRequestDto request){
-        return statementService.calculationOfPossibleLoanTerms(request);
+    public List<LoanOfferDto> calculateTerms(@Valid @RequestBody LoanStatementRequestDto request) {
+        return statementService.calculateTerms(request);
     }
 
     @Operation(summary = "Выбор одного из кредитных предложений",
@@ -168,8 +168,8 @@ public class DealController {
             )
     })
     @PostMapping("/offer/select")
-    public void choosingOneOfTheLoanOffers(@Valid @RequestBody LoanOfferDto request){
-        statementService.choosingOneOfTheLoanOffers(request);
+    public void selectOffer(@Valid @RequestBody LoanOfferDto request) {
+        statementService.selectOffer(request);
     }
 
     @Operation(summary = "Завершение регистрации и полный расчет кредита",

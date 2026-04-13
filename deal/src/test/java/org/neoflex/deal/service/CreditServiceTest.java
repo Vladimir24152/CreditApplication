@@ -297,7 +297,7 @@ class CreditServiceTest {
         assertEquals(1, testStatement.getStatusHistory().size());
 
         StatusHistory history = testStatement.getStatusHistory().getFirst();
-        assertEquals(ApplicationStatus.APPROVED, history.getStatus());
+        assertEquals(ApplicationStatus.CC_APPROVED, history.getStatus());
         assertEquals(ChangeType.AUTOMATIC, history.getChangeType());
         assertNotNull(history.getTime());
     }

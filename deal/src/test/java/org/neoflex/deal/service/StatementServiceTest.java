@@ -136,7 +136,7 @@ class StatementServiceTest {
         when(statementRepository.save(any())).thenReturn(testStatement);
         when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
 
-        List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
+        List<LoanOfferDto> result = statementService.calculateTerms(loanStatementRequest);
 
         assertNotNull(result);
         assertEquals(4, result.size());
@@ -154,7 +154,7 @@ class StatementServiceTest {
     @DisplayName("При null запросе выбрасывается NullPointerException")
     void whenRequestIsNullThenThrowNullPointerException() {
         assertThrows(NullPointerException.class,
-                () -> statementService.calculationOfPossibleLoanTerms(null));
+                () -> statementService.calculateTerms(null));
     }
 
     @Test
@@ -164,7 +164,7 @@ class StatementServiceTest {
         when(clientRepository.save(any())).thenThrow(new RuntimeException("Database error"));
 
         assertThrows(RuntimeException.class,
-                () -> statementService.calculationOfPossibleLoanTerms(loanStatementRequest));
+                () -> statementService.calculateTerms(loanStatementRequest));
 
         verifyNoInteractions(statementRepository);
     }
@@ -176,7 +176,7 @@ class StatementServiceTest {
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
+        statementService.selectOffer(loanOfferRequest);
 
         assertEquals(ApplicationStatus.APPROVED, testStatement.getStatus());
         assertEquals(loanOfferRequest, testStatement.getAppliedOffer());
@@ -200,7 +200,7 @@ class StatementServiceTest {
         when(statementRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> statementService.choosingOneOfTheLoanOffers(loanOfferRequest));
+                () -> statementService.selectOffer(loanOfferRequest));
 
         assertTrue(exception.getMessage().contains(nonExistentId.toString()));
         verify(statementRepository, never()).save(any());
@@ -210,18 +210,7 @@ class StatementServiceTest {
     @DisplayName("При null запросе на выбор предложения выбрасывается NullPointerException")
     void whenLoanOfferRequestIsNullThenThrowNullPointerException() {
         assertThrows(NullPointerException.class,
-                () -> statementService.choosingOneOfTheLoanOffers(null));
-    }
-
-    @Test
-    @DisplayName("При статусе заявки не PREAPPROVAL выбрасывается IllegalStateException")
-    void whenStatementStatusIsNotPreapprovalThenThrowIllegalStateException() {
-        testStatement.setStatus(ApplicationStatus.APPROVED);
-        when(statementRepository.findById(loanOfferRequest.getStatementId()))
-                .thenReturn(Optional.of(testStatement));
-
-        assertThrows(IllegalStateException.class,
-                () -> statementService.choosingOneOfTheLoanOffers(loanOfferRequest));
+                () -> statementService.selectOffer(null));
     }
 
     @Test
@@ -234,7 +223,7 @@ class StatementServiceTest {
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
+        statementService.selectOffer(loanOfferRequest);
 
         assertEquals(1, testStatement.getStatusHistory().size());
         assertEquals(ApplicationStatus.APPROVED, testStatement.getStatusHistory().getFirst().getStatus());
@@ -248,7 +237,7 @@ class StatementServiceTest {
         when(statementRepository.save(any())).thenReturn(testStatement);
         when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
 
-        List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
+        List<LoanOfferDto> result = statementService.calculateTerms(loanStatementRequest);
 
         assertNotNull(result);
         verify(clientMapper).toClient(loanStatementRequest);
@@ -264,7 +253,7 @@ class StatementServiceTest {
         when(statementRepository.save(any())).thenReturn(testStatement);
         when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
 
-        List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
+        List<LoanOfferDto> result = statementService.calculateTerms(loanStatementRequest);
 
         UUID firstStatementId = result.getFirst().getStatementId();
         for (LoanOfferDto offer : result) {
@@ -285,7 +274,7 @@ class StatementServiceTest {
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
+        statementService.selectOffer(loanOfferRequest);
 
         assertEquals(ApplicationStatus.APPROVED, testStatement.getStatus());
         assertNotEquals(ApplicationStatus.PREAPPROVAL, testStatement.getStatus());
@@ -298,7 +287,7 @@ class StatementServiceTest {
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
+        statementService.selectOffer(loanOfferRequest);
 
         assertThat(testStatement.getAppliedOffer())
                 .usingRecursiveComparison()
@@ -312,7 +301,7 @@ class StatementServiceTest {
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        statementService.choosingOneOfTheLoanOffers(loanOfferRequest);
+        statementService.selectOffer(loanOfferRequest);
 
         StatusHistory history = testStatement.getStatusHistory().getFirst();
         assertNotNull(history.getTime());
@@ -326,7 +315,7 @@ class StatementServiceTest {
         when(statementRepository.save(any())).thenReturn(testStatement);
         when(calculatorClientService.calculateLoanOffers(loanStatementRequest)).thenReturn(mockOffers);
 
-        List<LoanOfferDto> result = statementService.calculationOfPossibleLoanTerms(loanStatementRequest);
+        List<LoanOfferDto> result = statementService.calculateTerms(loanStatementRequest);
 
         assertNotNull(result);
         assertNotNull(testStatement.getCreationDate());

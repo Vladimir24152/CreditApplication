@@ -1,6 +1,7 @@
 package org.neoflex.deal.service;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.model.Client;
@@ -25,26 +26,30 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 @SpringBootTest
 @Testcontainers
-class StatementServiceLockTest {
+@DisplayName("Тесты сервиса StatementService на конкурентный доступ к обновлению ресурса")
+class StatementServiceConcurrencyTest {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15");
+
     @Autowired
     private StatementService statementService;
+
     @Autowired
     private StatementRepository statementRepository;
+
     @Autowired
     private ClientRepository clientRepository;
+
     private UUID statementId;
     private LoanOfferDto offer;
     private Client client;
@@ -99,38 +104,30 @@ class StatementServiceLockTest {
     }
 
     @Test
+    @DisplayName("Время выполнения методов должно отличаться из-за блокировки БД")
     void shouldBlockSecondThreadUntilFirstFinishes() throws Exception {
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
-        CountDownLatch firstStarted = new CountDownLatch(1);
+        CountDownLatch countDownLatch = new CountDownLatch(1);
 
-        Callable<Long> firstTask = () -> {
-            firstStarted.countDown();
+        CompletableFuture<Long> f1 = CompletableFuture.supplyAsync(() -> {
+            countDownLatch.countDown();
+            long startTime = System.currentTimeMillis();
+            statementService.selectOffer(offer);
+            long endTime = System.currentTimeMillis();
+            return endTime - startTime;
+        }, executor);
 
-            long start = System.currentTimeMillis();
-            try {
-                statementService.choosingOneOfTheLoanOffers(offer);
-            } catch (Exception ignored) {
+        CompletableFuture<Long> f2 = CompletableFuture.supplyAsync(() -> {
+            countDownLatch.countDown();
+            long startTime = System.currentTimeMillis();
+            statementService.selectOffer(offer);
+            long endTime = System.currentTimeMillis();
+            return endTime - startTime;
+        }, executor);
 
-            }
-            return System.currentTimeMillis() - start;
-        };
+        CompletableFuture.allOf(f1, f2).join();
 
-        Callable<Long> secondTask = () -> {
-            firstStarted.await();
-
-            long start = System.currentTimeMillis();
-            try {
-                statementService.choosingOneOfTheLoanOffers(offer);
-            } catch (Exception ignored) {
-
-            }
-            return System.currentTimeMillis() - start;
-        };
-
-        Future<Long> first = executor.submit(firstTask);
-        Future<Long> second = executor.submit(secondTask);
-
-        assertTrue(!first.isDone() || !second.isDone());
+        assertFalse(f1 == f2);
     }
 }

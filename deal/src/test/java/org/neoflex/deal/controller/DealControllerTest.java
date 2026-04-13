@@ -133,7 +133,7 @@ class DealControllerTest {
     @Test
     @DisplayName("POST /api/v1/deal/statement - успешный расчет кредитных предложений")
     void whenValidLoanStatementRequestThenReturnFourLoanOffers() throws Exception {
-        when(statementService.calculationOfPossibleLoanTerms(any(LoanStatementRequestDto.class)))
+        when(statementService.calculateTerms(any(LoanStatementRequestDto.class)))
                 .thenReturn(loanOffers);
 
         ResultActions result = mockMvc.perform(post("/api/v1/deal/statement")
@@ -148,7 +148,7 @@ class DealControllerTest {
                 .andExpect(jsonPath("$[0].rate", is(12.5)))
                 .andExpect(jsonPath("$[1].rate", is(14.0)));
 
-        verify(statementService).calculationOfPossibleLoanTerms(any(LoanStatementRequestDto.class));
+        verify(statementService).calculateTerms(any(LoanStatementRequestDto.class));
     }
 
     @Test
@@ -177,7 +177,7 @@ class DealControllerTest {
     @Test
     @DisplayName("POST /api/v1/deal/offer/select - успешный выбор кредитного предложения")
     void whenValidLoanOfferRequestThenSelectOfferSuccessfully() throws Exception {
-        doNothing().when(statementService).choosingOneOfTheLoanOffers(any(LoanOfferDto.class));
+        doNothing().when(statementService).selectOffer(any(LoanOfferDto.class));
 
         ResultActions result = mockMvc.perform(post("/api/v1/deal/offer/select")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -185,7 +185,7 @@ class DealControllerTest {
 
         result.andExpect(status().isOk());
 
-        verify(statementService).choosingOneOfTheLoanOffers(any(LoanOfferDto.class));
+        verify(statementService).selectOffer(any(LoanOfferDto.class));
     }
 
     @Test

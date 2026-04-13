@@ -35,7 +35,7 @@ public class StatementService {
     private final ClientMapper clientMapper;
 
     @Transactional
-    public List<LoanOfferDto> calculationOfPossibleLoanTerms(LoanStatementRequestDto request){
+    public List<LoanOfferDto> calculateTerms(LoanStatementRequestDto request) {
 
         if (request == null) {
             throw new NullPointerException("Отсутствует тело запроса");
@@ -68,7 +68,7 @@ public class StatementService {
     }
 
     @Transactional
-    public void choosingOneOfTheLoanOffers(LoanOfferDto request){
+    public void selectOffer(LoanOfferDto request) {
 
         if (request == null) {
             throw new NullPointerException("Отсутствует тело запроса");
@@ -78,14 +78,6 @@ public class StatementService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Не найдена заявка с id указанным в запросе: %s",request.getStatementId()))
                 );
-
-        if (statement.getStatus() != PREAPPROVAL) {
-            throw new IllegalStateException(
-                    String.format("Некорректный статус заявки %s для выбора кредитного предложения. Ожидаемый статус %s," +
-                                    " текущий статус: %s",
-                            statement.getStatementId(), PREAPPROVAL, statement.getStatus())
-            );
-        }
 
         statement.setStatus(APPROVED);
 
