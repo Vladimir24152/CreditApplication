@@ -2,7 +2,7 @@ package org.neoflex.calculator.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.calculator.dto.response.HttpErrorResponse;
+import org.neoflex.calculator.dto.response.HttpErrorInternalServiceResponse;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,10 +20,10 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<HttpErrorResponse> handleNoResourceFoundException(
+    public ResponseEntity<HttpErrorInternalServiceResponse> handleNoResourceFoundException(
             NoResourceFoundException e) {
 
-        return buildErrorResponse(
+        return buildErrorInternalServiceResponse(
                 HttpStatus.NOT_FOUND,
                 "API_NOT_FOUND",
                 "Запрашиваемый API не найден: " + e.getResourcePath()
@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({HttpMessageNotReadableException.class})
-    public ResponseEntity<HttpErrorResponse> handlerHttpMessageNotReadableException (Exception e) {
+    public ResponseEntity<HttpErrorInternalServiceResponse> handlerHttpMessageNotReadableException(Exception e) {
 
         String message = "Ошибка в формате запроса: ";
 
@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
             message += e.getMessage();
         }
 
-        return buildErrorResponse(
+        return buildErrorInternalServiceResponse(
                 HttpStatus.BAD_REQUEST,
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
                 message
@@ -49,9 +49,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({NullPointerException.class})
-    public ResponseEntity<HttpErrorResponse> handlerIllegalArgumentException (Exception e) {
+    public ResponseEntity<HttpErrorInternalServiceResponse> handlerIllegalArgumentException(Exception e) {
 
-        return buildErrorResponse(
+        return buildErrorInternalServiceResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 e.getMessage()
@@ -59,7 +59,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
-    public ResponseEntity<HttpErrorResponse> handlerMethodArgumentNotValidException (Exception e) {
+    public ResponseEntity<HttpErrorInternalServiceResponse> handlerMethodArgumentNotValidException(Exception e) {
 
         String message = getErrorMessageFromMethodArgumentNotValidException(e);
         HttpStatus status;
@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
             status = HttpStatus.BAD_REQUEST;
         }
 
-        return buildErrorResponse(
+        return buildErrorInternalServiceResponse(
                 status,
                 status.getReasonPhrase(),
                 message
@@ -78,8 +78,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<HttpErrorResponse> handleRuntimeException(RuntimeException e) {
-        return buildErrorResponse(
+    public ResponseEntity<HttpErrorInternalServiceResponse> handleRuntimeException(RuntimeException e) {
+        return buildErrorInternalServiceResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 "Произошла внутренняя ошибка сервера"
@@ -87,29 +87,30 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<HttpErrorResponse> handleConstraintViolationException(ConstraintViolationException e) {
+    public ResponseEntity<HttpErrorInternalServiceResponse> handleConstraintViolationException(ConstraintViolationException e) {
         String message = e.getConstraintViolations()
                 .stream()
                 .map(violation -> violation.getMessage())
                 .collect(Collectors.joining("; "));
 
-        return buildErrorResponse(
+        return buildErrorInternalServiceResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
                 message
         );
     }
 
-    private ResponseEntity<HttpErrorResponse> buildErrorResponse(
-            HttpStatus status, String type, String message) {
+    private ResponseEntity<HttpErrorInternalServiceResponse> buildErrorInternalServiceResponse(
+            HttpStatus externalStatus, String type, String message) {
         log.error("{}: {}", type, message);
-        HttpErrorResponse response = new HttpErrorResponse(
-                status.value(),
+        HttpErrorInternalServiceResponse response = new HttpErrorInternalServiceResponse(
+                externalStatus.value(),
                 type,
                 LocalDateTime.now(),
-                message
+                message,
+                null
         );
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(externalStatus).body(response);
     }
 
     private String getErrorMessageFromMethodArgumentNotValidException(Exception e){

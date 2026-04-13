@@ -10,12 +10,18 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
-    show-sql: ${SPRING_JPA_SHOW_SQL:true}
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+
+  liquibase:
+    enabled: ${LIQUIBASE_ENABLED:true}
+    change-log: classpath:db.changelog/db.changelog-master.xml
+    default-schema: public
+    drop-first: ${LIQUIBASE_DROP_FIRST:false}
 
 springdoc:
   api-docs:
@@ -28,6 +34,10 @@ springdoc:
 logging:
   level:
     org.neoflex.deal: DEBUG
+    org.neoflex.statement.interceptor: DEBUG
+    org.hibernate.SQL: ERROR
+    org.hibernate.type: ERROR
+    org.hibernate.engine.jdbc: WARN
 
 calculator:
   service:

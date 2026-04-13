@@ -91,8 +91,8 @@ public class DealController {
             )
     })
     @PostMapping("/statement")
-    public List<LoanOfferDto> calculationOfPossibleLoanTerms(@Valid @RequestBody LoanStatementRequestDto request){
-        return statementService.calculationOfPossibleLoanTerms(request);
+    public List<LoanOfferDto> calculateTerms(@Valid @RequestBody LoanStatementRequestDto request) {
+        return statementService.calculateTerms(request);
     }
 
     @Operation(summary = "Выбор одного из кредитных предложений",
@@ -140,6 +140,13 @@ public class DealController {
                             )
                     )
             ),
+            @ApiResponse(responseCode = "409",
+                    description = "Текущий статус заявки не совпадает с ожидаемым",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class)
+                    )
+            ),
             @ApiResponse(responseCode = "500",
                     description = "Внутренняя ошибка сервера при обработке запроса",
                     content = @Content(
@@ -161,8 +168,8 @@ public class DealController {
             )
     })
     @PostMapping("/offer/select")
-    public void choosingOneOfTheLoanOffers(@Valid @RequestBody LoanOfferDto request){
-        statementService.choosingOneOfTheLoanOffers(request);
+    public void selectOffer(@Valid @RequestBody LoanOfferDto request) {
+        statementService.selectOffer(request);
     }
 
     @Operation(summary = "Завершение регистрации и полный расчет кредита",
@@ -208,6 +215,13 @@ public class DealController {
                                              }
                                             """
                             )
+                    )
+            ),
+            @ApiResponse(responseCode = "409",
+                    description = "Текущий статус заявки не совпадает с ожидаемым",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class)
                     )
             ),
             @ApiResponse(responseCode = "500",

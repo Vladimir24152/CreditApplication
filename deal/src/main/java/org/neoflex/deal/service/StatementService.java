@@ -35,7 +35,7 @@ public class StatementService {
     private final ClientMapper clientMapper;
 
     @Transactional
-    public List<LoanOfferDto> calculationOfPossibleLoanTerms(LoanStatementRequestDto request){
+    public List<LoanOfferDto> calculateTerms(LoanStatementRequestDto request) {
 
         if (request == null) {
             throw new NullPointerException("Отсутствует тело запроса");
@@ -68,7 +68,7 @@ public class StatementService {
     }
 
     @Transactional
-    public void choosingOneOfTheLoanOffers(LoanOfferDto request){
+    public void selectOffer(LoanOfferDto request) {
 
         if (request == null) {
             throw new NullPointerException("Отсутствует тело запроса");

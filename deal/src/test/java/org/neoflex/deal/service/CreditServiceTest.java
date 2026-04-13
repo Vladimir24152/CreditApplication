@@ -125,7 +125,7 @@ class CreditServiceTest {
         testStatement = Statement.builder()
                 .statementId(statementId)
                 .client(client)
-                .status(ApplicationStatus.PREAPPROVAL)
+                .status(ApplicationStatus.APPROVED)
                 .statusHistory(new ArrayList<>())
                 .creationDate(LocalDateTime.now())
                 .build();
@@ -220,6 +220,17 @@ class CreditServiceTest {
     }
 
     @Test
+    @DisplayName("При статусе заявки не APPROVED выбрасывается IllegalStateException")
+    void whenStatementStatusIsNotApprovedThenThrowIllegalStateException() {
+        testStatement.setStatus(ApplicationStatus.PREAPPROVAL);
+
+        when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
+
+        assertThrows(IllegalStateException.class,
+                () -> creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId));
+    }
+
+    @Test
     @DisplayName("При несуществующем statementId выбрасывается EntityNotFoundException")
     void whenStatementNotFoundThenThrowEntityNotFoundException() {
         UUID nonExistentId = UUID.randomUUID();
@@ -251,7 +262,7 @@ class CreditServiceTest {
     }
 
     @Test
-    @DisplayName("При успешном расчете статус заявки меняется на APPROVED")
+    @DisplayName("При успешном расчете статус заявки меняется на CC_APPROVED")
     void whenCreditCalculatedThenStatementStatusChangesToApproved() {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
         when(clientMapper.toScoringDataDto(finishRequest, testStatement)).thenReturn(scoringDataDto);
@@ -260,11 +271,11 @@ class CreditServiceTest {
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        assertEquals(ApplicationStatus.PREAPPROVAL, testStatement.getStatus());
+        assertEquals(ApplicationStatus.APPROVED, testStatement.getStatus());
 
         creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
 
-        assertEquals(ApplicationStatus.APPROVED, testStatement.getStatus());
+        assertEquals(ApplicationStatus.CC_APPROVED, testStatement.getStatus());
     }
 
     @Test
@@ -286,7 +297,7 @@ class CreditServiceTest {
         assertEquals(1, testStatement.getStatusHistory().size());
 
         StatusHistory history = testStatement.getStatusHistory().getFirst();
-        assertEquals(ApplicationStatus.APPROVED, history.getStatus());
+        assertEquals(ApplicationStatus.CC_APPROVED, history.getStatus());
         assertEquals(ChangeType.AUTOMATIC, history.getChangeType());
         assertNotNull(history.getTime());
     }
@@ -303,8 +314,8 @@ class CreditServiceTest {
 
         creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
 
-        verify(creditRepository).save(any());
         assertEquals(CreditStatus.CALCULATED, credit.getCreditStatus());
+        verify(creditRepository).save(any());
     }
 
     @Test

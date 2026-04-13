@@ -1,10 +1,12 @@
 package org.neoflex.deal.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.deal.client.calculator.CalculatorClient;
-import org.neoflex.deal.dto.response.HttpErrorResponse;
+import org.neoflex.deal.dto.response.HttpErrorInternalServiceResponse;
 import org.neoflex.deal.exception.InternalServiceException;
+import org.neoflex.deal.interceptor.LoggingInnerInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class CalculatorClientConfig {
 
     @Value("${calculator.service.url:http://localhost:8080}")
@@ -26,21 +29,24 @@ public class CalculatorClientConfig {
 
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
+    private final LoggingInnerInterceptor loggingInnerInterceptor;
+
 
     @Bean
     public CalculatorClient calculatorClient() {
         RestClient restClient = RestClient.builder()
                 .baseUrl(calculatorServiceUrl)
+                .requestInterceptor(loggingInnerInterceptor)
                 .defaultStatusHandler(HttpStatusCode::isError,
                         (request, response) -> {
-                            HttpErrorResponse errorResponse = null;
+                            HttpErrorInternalServiceResponse errorResponse = null;
                             String message;
 
                             try {
                                 String errorBody = new String(response.getBody().readAllBytes(),StandardCharsets.UTF_8);
 
                                 errorResponse = objectMapper.readValue(errorBody,
-                                        HttpErrorResponse.class);
+                                        HttpErrorInternalServiceResponse.class);
 
                                 log.error("RAW ERROR BODY: {}", errorBody);
 

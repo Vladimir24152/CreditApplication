@@ -4,6 +4,12 @@ spring:
   profiles:
     active: default
 
+  liquibase:
+    enabled: true
+    change-log: classpath:db.changelog/db.changelog-master.xml
+    default-schema: public
+    drop-first: false
+
 server:
   port: 8081
 
