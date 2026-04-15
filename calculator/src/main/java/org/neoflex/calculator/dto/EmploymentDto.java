@@ -10,11 +10,11 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.neoflex.calculator.annotations.MinimumCurrentWorkExperience;
-import org.neoflex.calculator.annotations.MinimumTotalWorkExperience;
-import org.neoflex.calculator.annotations.NotUnemployed;
 import org.neoflex.calculator.enums.EmploymentStatus;
 import org.neoflex.calculator.enums.Position;
+import org.neoflex.calculator.validation.annotation.MinimumCurrentWorkExperience;
+import org.neoflex.calculator.validation.annotation.MinimumTotalWorkExperience;
+import org.neoflex.calculator.validation.annotation.NotUnemployed;
 
 import java.math.BigDecimal;
 

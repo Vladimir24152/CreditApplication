@@ -1,4 +1,4 @@
-package org.neoflex.statement.client;
+package org.neoflex.statement.client.deal;
 
 import lombok.RequiredArgsConstructor;
 import org.neoflex.statement.dto.LoanOfferDto;
@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DealClientImpl {
+public class DealClientService {
 
     private final DealClient dealClient;
 

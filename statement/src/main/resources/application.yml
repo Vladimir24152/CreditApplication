@@ -18,3 +18,7 @@ springdoc:
 deal:
   service:
     url: http://localhost:8081
+  endpoints:
+    base: /api/v1/deal
+    statement: /statement
+    offer-select: /offer/select

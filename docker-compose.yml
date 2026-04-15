@@ -43,11 +43,9 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_db:5432/demo_db
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=pass
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=false
       - CALCULATOR_SERVICE_URL=http://calculator:8080
       - LIQUIBASE_ENABLED=true
-      - LIQUIBASE_DROP_FIRST=true
     networks:
       - credit-network
 

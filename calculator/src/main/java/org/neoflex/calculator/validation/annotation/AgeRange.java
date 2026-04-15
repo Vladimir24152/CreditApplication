@@ -1,8 +1,8 @@
-package org.neoflex.calculator.annotations;
+package org.neoflex.calculator.validation.annotation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import org.neoflex.calculator.validation.AgeRangeValidator;
+import org.neoflex.calculator.validation.validator.AgeRangeValidator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

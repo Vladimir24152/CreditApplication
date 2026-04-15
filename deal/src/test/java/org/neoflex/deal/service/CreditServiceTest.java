@@ -202,7 +202,7 @@ class CreditServiceTest {
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
+        creditService.completeRegistration(finishRequest, statementId);
 
         verify(statementRepository).findById(statementId);
         verify(clientMapper).toScoringDataDto(finishRequest, testStatement);
@@ -216,7 +216,7 @@ class CreditServiceTest {
     @DisplayName("При null запросе выбрасывается NullPointerException")
     void whenFinishRequestIsNullThenThrowNullPointerException() {
         assertThrows(NullPointerException.class,
-                () -> creditService.completeOfRegistrationAndFullCalculation(null, statementId));
+                () -> creditService.completeRegistration(null, statementId));
     }
 
     @Test
@@ -227,7 +227,7 @@ class CreditServiceTest {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(testStatement));
 
         assertThrows(IllegalStateException.class,
-                () -> creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId));
+                () -> creditService.completeRegistration(finishRequest, statementId));
     }
 
     @Test
@@ -237,7 +237,7 @@ class CreditServiceTest {
         when(statementRepository.findById(nonExistentId)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> creditService.completeOfRegistrationAndFullCalculation(finishRequest, nonExistentId));
+                () -> creditService.completeRegistration(finishRequest, nonExistentId));
 
         assertTrue(exception.getMessage().contains(nonExistentId.toString()));
         verify(creditRepository, never()).save(any());
@@ -254,7 +254,7 @@ class CreditServiceTest {
         when(creditRepository.save(any())).thenThrow(new RuntimeException("Database error"));
 
         assertThrows(RuntimeException.class,
-                () -> creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId));
+                () -> creditService.completeRegistration(finishRequest, statementId));
 
         verify(statementRepository).findById(statementId);
         verify(creditRepository).save(any());
@@ -273,7 +273,7 @@ class CreditServiceTest {
 
         assertEquals(ApplicationStatus.APPROVED, testStatement.getStatus());
 
-        creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
+        creditService.completeRegistration(finishRequest, statementId);
 
         assertEquals(ApplicationStatus.CC_APPROVED, testStatement.getStatus());
     }
@@ -292,7 +292,7 @@ class CreditServiceTest {
 
         assertEquals(0, testStatement.getStatusHistory().size());
 
-        creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
+        creditService.completeRegistration(finishRequest, statementId);
 
         assertEquals(1, testStatement.getStatusHistory().size());
 
@@ -312,7 +312,7 @@ class CreditServiceTest {
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
+        creditService.completeRegistration(finishRequest, statementId);
 
         assertEquals(CreditStatus.CALCULATED, credit.getCreditStatus());
         verify(creditRepository).save(any());
@@ -328,7 +328,7 @@ class CreditServiceTest {
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
+        creditService.completeRegistration(finishRequest, statementId);
 
         assertThat(credit)
                 .usingRecursiveComparison()
@@ -346,7 +346,7 @@ class CreditServiceTest {
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
+        creditService.completeRegistration(finishRequest, statementId);
 
         verify(calculatorClientService).calculateCredit(scoringDataDto);
     }
@@ -361,7 +361,7 @@ class CreditServiceTest {
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
+        creditService.completeRegistration(finishRequest, statementId);
 
         verify(clientMapper).toScoringDataDto(finishRequest, testStatement);
     }
@@ -376,7 +376,7 @@ class CreditServiceTest {
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
 
-        creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
+        creditService.completeRegistration(finishRequest, statementId);
 
         verify(statementRepository).save(testStatement);
     }
@@ -393,7 +393,7 @@ class CreditServiceTest {
 
         assertNull(testStatement.getCredit());
 
-        creditService.completeOfRegistrationAndFullCalculation(finishRequest, statementId);
+        creditService.completeRegistration(finishRequest, statementId);
 
         assertNotNull(testStatement.getCredit());
         assertEquals(credit.getCreditId(), testStatement.getCredit().getCreditId());

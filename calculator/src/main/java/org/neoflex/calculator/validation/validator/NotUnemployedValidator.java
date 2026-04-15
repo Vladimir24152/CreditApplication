@@ -1,9 +1,9 @@
-package org.neoflex.calculator.validation;
+package org.neoflex.calculator.validation.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.neoflex.calculator.annotations.NotUnemployed;
 import org.neoflex.calculator.enums.EmploymentStatus;
+import org.neoflex.calculator.validation.annotation.NotUnemployed;
 
 public class NotUnemployedValidator implements ConstraintValidator<NotUnemployed, EmploymentStatus>{
 

@@ -1,8 +1,8 @@
-package org.neoflex.statement.validation;
+package org.neoflex.calculator.validation.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.neoflex.statement.annotations.Adult;
+import org.neoflex.calculator.validation.annotation.Adult;
 
 import java.time.LocalDate;
 import java.time.Period;

@@ -11,11 +11,15 @@ springdoc:
 
 logging:
   level:
-    org.neoflex.statement: DEBUG      # ← ДОБАВИТЬ (ваш пакет)
-    org.neoflex.statement.interceptor: DEBUG  # ← ДОБАВИТЬ (интерцепторы)
+    org.neoflex.statement: DEBUG
+    org.neoflex.statement.interceptor: DEBUG
     org.springframework.web: INFO
     org.springframework.web.servlet: INFO
 
 deal:
   service:
     url: ${DEAL_SERVICE_URL:http://deal:8081}
+  endpoints:
+    base: ${DEAL_ENDPOINTS_BASE:/api/v1/deal}
+    statement: ${DEAL_ENDPOINTS_STATEMENT:/statement}
+    offer-select: ${DEAL_ENDPOINTS_OFFER-SELECT:/offer/select}

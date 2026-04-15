@@ -245,10 +245,10 @@ public class DealController {
             )
     })
     @PostMapping("/calculate/{statementId}")
-    public void completionOfRegistrationAndFullCreditCalculation(
+    public void completeRegistration(
             @Valid @RequestBody FinishRegistrationRequestDto request,
             @PathVariable UUID statementId
     ){
-        creditService.completeOfRegistrationAndFullCalculation(request, statementId);
+        creditService.completeRegistration(request, statementId);
     }
 }

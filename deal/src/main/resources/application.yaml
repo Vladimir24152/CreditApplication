@@ -24,3 +24,7 @@ springdoc:
 calculator:
   service:
     url: http://localhost:8080
+  endpoints:
+    base: /api/v1/calculator
+    offers: /offers
+    calc: /calc

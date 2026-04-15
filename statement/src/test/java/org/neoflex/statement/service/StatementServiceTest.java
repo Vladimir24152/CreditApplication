@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.neoflex.statement.client.DealClientImpl;
+import org.neoflex.statement.client.deal.DealClientService;
 import org.neoflex.statement.dto.LoanOfferDto;
 import org.neoflex.statement.dto.LoanStatementRequestDto;
 
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 class StatementServiceTest {
 
     @Mock
-    private DealClientImpl dealClientImpl;
+    private DealClientService dealClientService;
 
     @InjectMocks
     private StatementService statementService;
@@ -87,14 +87,14 @@ class StatementServiceTest {
     @Test
     @DisplayName("Успешный расчет возможных условий кредита при корректных данных клиента")
     void whenClientDataIsValidThenReturnFourLoanOffers() {
-        when(dealClientImpl.calculateOfPossibleLoanTerms(loanStatementRequest)).thenReturn(mockOffers);
+        when(dealClientService.calculateOfPossibleLoanTerms(loanStatementRequest)).thenReturn(mockOffers);
 
         List<LoanOfferDto> result = statementService.getOffers(loanStatementRequest);
 
         assertNotNull(result);
         assertEquals(4, result.size());
 
-        verify(dealClientImpl).calculateOfPossibleLoanTerms(loanStatementRequest);
+        verify(dealClientService).calculateOfPossibleLoanTerms(loanStatementRequest);
     }
 
     @Test
@@ -107,11 +107,11 @@ class StatementServiceTest {
     @Test
     @DisplayName("Успешный выбор предложения при корректных данных")
     void whenOfferIsValidThenSelectOfferSuccess() {
-        doNothing().when(dealClientImpl).selectOffer(loanOfferRequest);
+        doNothing().when(dealClientService).selectOffer(loanOfferRequest);
 
         statementService.selectOffer(loanOfferRequest);
 
-        verify(dealClientImpl).selectOffer(loanOfferRequest);
+        verify(dealClientService).selectOffer(loanOfferRequest);
     }
 
     @Test
