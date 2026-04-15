@@ -1,8 +1,8 @@
-package org.neoflex.statement.annotations;
+package org.neoflex.statement.validation.annotation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import org.neoflex.statement.validation.AdultValidator;
+import org.neoflex.statement.validation.validator.AdultValidator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

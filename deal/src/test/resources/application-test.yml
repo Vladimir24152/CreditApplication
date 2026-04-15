@@ -16,3 +16,9 @@ spring:
 
 server:
   port: 8081
+
+calculator:
+  endpoints:
+    base: /api/v1/calculator
+    offers: /offers
+    calc: /calc

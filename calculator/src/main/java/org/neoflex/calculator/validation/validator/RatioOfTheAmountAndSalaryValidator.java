@@ -1,9 +1,9 @@
-package org.neoflex.calculator.validation;
+package org.neoflex.calculator.validation.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.neoflex.calculator.annotations.RatioOfTheAmountAndSalary;
 import org.neoflex.calculator.dto.ScoringDataDto;
+import org.neoflex.calculator.validation.annotation.RatioOfTheAmountAndSalary;
 
 import java.math.BigDecimal;
 

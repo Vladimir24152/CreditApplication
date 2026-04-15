@@ -1,6 +1,7 @@
 package org.neoflex.deal.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.deal.client.calculator.CalculatorClientService;
@@ -40,13 +41,9 @@ public class CreditService {
     private final CreditMapper creditMapper;
 
     @Transactional
-    public void completeOfRegistrationAndFullCalculation(FinishRegistrationRequestDto request, UUID statementId) {
+    public void completeRegistration(@NonNull FinishRegistrationRequestDto request, UUID statementId) {
 
         log.info("Завершение регистрации для заявки: {}", statementId);
-
-        if (request == null) {
-            throw new NullPointerException("Отсутствует тело запроса");
-        }
 
         Statement statement = statementRepository.findById(statementId)
                 .orElseThrow(() -> new EntityNotFoundException(

@@ -1,8 +1,8 @@
-package org.neoflex.calculator.validation;
+package org.neoflex.calculator.validation.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.neoflex.calculator.annotations.AgeRange;
+import org.neoflex.calculator.validation.annotation.AgeRange;
 
 import java.time.LocalDate;
 

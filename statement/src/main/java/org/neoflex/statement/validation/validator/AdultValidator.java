@@ -1,8 +1,8 @@
-package org.neoflex.calculator.validation;
+package org.neoflex.statement.validation.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.neoflex.calculator.annotations.Adult;
+import org.neoflex.statement.validation.annotation.Adult;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -15,10 +15,6 @@ public class AdultValidator implements ConstraintValidator<Adult, LocalDate> {
             return true;
         }
 
-        if (Period.between(value, LocalDate.now()).getYears() < 18) {
-            return false;
-        }
-
-        return true;
+        return Period.between(value, LocalDate.now()).getYears() >= 18;
     }
 }

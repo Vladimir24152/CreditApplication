@@ -1,8 +1,8 @@
-package org.neoflex.calculator.annotations;
+package org.neoflex.calculator.validation.annotation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import org.neoflex.calculator.validation.RatioOfTheAmountAndSalaryValidator;
+import org.neoflex.calculator.validation.validator.RatioOfTheAmountAndSalaryValidator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

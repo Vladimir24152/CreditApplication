@@ -10,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:validate}
+      ddl-auto: validate
     show-sql: ${SPRING_JPA_SHOW_SQL:false}
     properties:
       hibernate:
@@ -21,7 +21,7 @@ spring:
     enabled: ${LIQUIBASE_ENABLED:true}
     change-log: classpath:db.changelog/db.changelog-master.xml
     default-schema: public
-    drop-first: ${LIQUIBASE_DROP_FIRST:false}
+    drop-first: false
 
 springdoc:
   api-docs:
@@ -42,3 +42,7 @@ logging:
 calculator:
   service:
     url: ${CALCULATOR_SERVICE_URL:http://calculator:8080}
+  endpoints:
+    base: "${CALCULATOR_ENDPOINTS_BASE:/api/v1/calculator}"
+    offers: "${CALCULATOR_ENDPOINTS_OFFERS:/offers}"
+    calc: "${CALCULATOR_ENDPOINTS_CALC:/calc}"

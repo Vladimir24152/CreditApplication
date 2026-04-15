@@ -209,7 +209,7 @@ class DealControllerTest {
     @Test
     @DisplayName("POST /api/v1/deal/calculate/{statementId} - успешное завершение регистрации")
     void whenValidFinishRegistrationRequestThenCalculateCreditSuccessfully() throws Exception {
-        doNothing().when(creditService).completeOfRegistrationAndFullCalculation(
+        doNothing().when(creditService).completeRegistration(
                 any(FinishRegistrationRequestDto.class), any(UUID.class));
 
         ResultActions result = mockMvc.perform(post("/api/v1/deal/calculate/{statementId}", statementId)
@@ -218,7 +218,7 @@ class DealControllerTest {
 
         result.andExpect(status().isOk());
 
-        verify(creditService).completeOfRegistrationAndFullCalculation(
+        verify(creditService).completeRegistration(
                 any(FinishRegistrationRequestDto.class), eq(statementId));
     }
 
@@ -248,7 +248,7 @@ class DealControllerTest {
     @DisplayName("POST /api/v1/deal/calculate/{statementId} - ошибка сервиса возвращает 404")
     void whenStatementNotFoundThenReturnNotFound() throws Exception {
         doThrow(new jakarta.persistence.EntityNotFoundException("Заявка не найдена"))
-                .when(creditService).completeOfRegistrationAndFullCalculation(
+                .when(creditService).completeRegistration(
                         any(FinishRegistrationRequestDto.class), any(UUID.class));
 
         ResultActions result = mockMvc.perform(post("/api/v1/deal/calculate/{statementId}", statementId)
@@ -257,14 +257,14 @@ class DealControllerTest {
 
         result.andExpect(status().isNotFound());
 
-        verify(creditService).completeOfRegistrationAndFullCalculation(any(), any());
+        verify(creditService).completeRegistration(any(), any());
     }
 
     @Test
     @DisplayName("POST /api/v1/deal/calculate/{statementId} - ошибка валидации в сервисе возвращает 400")
     void whenScoringFailedThenReturnBadRequest() throws Exception {
         doThrow(new IllegalArgumentException("Неверные данные для скоринга"))
-                .when(creditService).completeOfRegistrationAndFullCalculation(
+                .when(creditService).completeRegistration(
                         any(FinishRegistrationRequestDto.class), any(UUID.class));
 
         ResultActions result = mockMvc.perform(post("/api/v1/deal/calculate/{statementId}", statementId)
@@ -273,6 +273,6 @@ class DealControllerTest {
 
         result.andExpect(status().isBadRequest());
 
-        verify(creditService).completeOfRegistrationAndFullCalculation(any(), any());
+        verify(creditService).completeRegistration(any(), any());
     }
 }

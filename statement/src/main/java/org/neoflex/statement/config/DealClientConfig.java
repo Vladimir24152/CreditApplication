@@ -3,11 +3,12 @@ package org.neoflex.statement.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.statement.client.DealClient;
+import org.neoflex.statement.client.deal.DealClient;
 import org.neoflex.statement.dto.response.HttpErrorInternalServiceResponse;
 import org.neoflex.statement.exception.InternalServiceException;
-import org.neoflex.statement.interceptor.LoggingInnerInterceptor;
+import org.neoflex.statement.interceptor.LoggingInternalInterceptor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatusCode;
@@ -29,13 +30,14 @@ public class DealClientConfig {
     @Value("${deal.service.url:http://localhost:8081}")
     private String serviceUrl;
 
-    private final LoggingInnerInterceptor loggingInnerInterceptor;
+    private final LoggingInternalInterceptor loggingInternalInterceptor;
+    private final ConfigurableBeanFactory beanFactory;
 
     @Bean
     public DealClient dealClient() {
         RestClient restClient = RestClient.builder()
                 .baseUrl(serviceUrl)
-                .requestInterceptor(loggingInnerInterceptor)
+                .requestInterceptor(loggingInternalInterceptor)
                 .defaultStatusHandler(HttpStatusCode::isError,
                         (request, response) -> {
                             HttpErrorInternalServiceResponse errorResponse = null;
@@ -59,7 +61,9 @@ public class DealClientConfig {
                 .build();
 
         RestClientAdapter adapter = RestClientAdapter.create(restClient);
-        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter).build();
+        HttpServiceProxyFactory factory = HttpServiceProxyFactory.builderFor(adapter)
+                .embeddedValueResolver(beanFactory::resolveEmbeddedValue)
+                .build();
 
         return factory.createClient(DealClient.class);
     }

@@ -30,8 +30,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @SpringBootTest
 @Testcontainers
@@ -54,6 +55,8 @@ class StatementServiceConcurrencyTest {
     private LoanOfferDto offer;
     private Client client;
     private Statement statement;
+
+    private final Long EPSILON = 5L;
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
@@ -109,25 +112,33 @@ class StatementServiceConcurrencyTest {
 
         ExecutorService executor = Executors.newFixedThreadPool(2);
         CountDownLatch countDownLatch = new CountDownLatch(1);
+        AtomicLong startTime1 = new AtomicLong();
+        AtomicLong startTime2 = new AtomicLong();
+        AtomicLong endTime1 = new AtomicLong();
+        ;
+        AtomicLong endTime2 = new AtomicLong();
+        ;
 
         CompletableFuture<Long> f1 = CompletableFuture.supplyAsync(() -> {
             countDownLatch.countDown();
-            long startTime = System.currentTimeMillis();
+            startTime1.set(System.currentTimeMillis());
             statementService.selectOffer(offer);
-            long endTime = System.currentTimeMillis();
-            return endTime - startTime;
+            endTime1.set(System.currentTimeMillis());
+            System.out.println("Время первого: " + (endTime1.get() - startTime1.get()));
+            return endTime1.get() - startTime1.get();
         }, executor);
 
         CompletableFuture<Long> f2 = CompletableFuture.supplyAsync(() -> {
             countDownLatch.countDown();
-            long startTime = System.currentTimeMillis();
+            startTime2.set(System.currentTimeMillis());
             statementService.selectOffer(offer);
-            long endTime = System.currentTimeMillis();
-            return endTime - startTime;
+            endTime2.set(System.currentTimeMillis());
+            System.out.println("Время второго: " + (endTime2.get() - startTime2.get()));
+            return endTime2.get() - startTime2.get();
         }, executor);
 
         CompletableFuture.allOf(f1, f2).join();
 
-        assertFalse(f1 == f2);
+        assertTrue(Math.abs(f1.get() - f2.get()) > EPSILON);
     }
 }

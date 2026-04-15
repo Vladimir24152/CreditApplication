@@ -1,16 +1,16 @@
-package org.neoflex.calculator.validation;
+package org.neoflex.calculator.validation.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.neoflex.calculator.annotations.MinimumCurrentWorkExperience;
+import org.neoflex.calculator.validation.annotation.MinimumTotalWorkExperience;
 
-public class MinimumCurrentWorkExperienceValidator  implements
-        ConstraintValidator<MinimumCurrentWorkExperience, Integer> {
+public class MinimumTotalWorkExperienceValidator implements
+        ConstraintValidator<MinimumTotalWorkExperience, Integer> {
 
     private int countOfMonth;
 
     @Override
-    public void initialize(MinimumCurrentWorkExperience constraintAnnotation) {
+    public void initialize(MinimumTotalWorkExperience constraintAnnotation) {
         this.countOfMonth = constraintAnnotation.countOfMonth();
     }
 
