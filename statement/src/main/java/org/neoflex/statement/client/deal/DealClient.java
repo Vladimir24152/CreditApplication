@@ -8,12 +8,12 @@ import org.springframework.web.service.annotation.PostExchange;
 
 import java.util.List;
 
-@HttpExchange("${deal.endpoints.base}")
+@HttpExchange("${client.deal.url}")
 public interface DealClient {
 
-    @PostExchange("${deal.endpoints.statement}")
+    @PostExchange("${client.deal.api.calculate.path}")
     List<LoanOfferDto> calculateOfPossibleLoanTerms(@RequestBody LoanStatementRequestDto request);
 
-    @PostExchange("${deal.endpoints.offer-select}")
+    @PostExchange("${client.deal.api.select.path}")
     void selectOffer(@RequestBody LoanOfferDto request);
 }
