@@ -115,16 +115,13 @@ class StatementServiceConcurrencyTest {
         AtomicLong startTime1 = new AtomicLong();
         AtomicLong startTime2 = new AtomicLong();
         AtomicLong endTime1 = new AtomicLong();
-        ;
         AtomicLong endTime2 = new AtomicLong();
-        ;
 
         CompletableFuture<Long> f1 = CompletableFuture.supplyAsync(() -> {
             countDownLatch.countDown();
             startTime1.set(System.currentTimeMillis());
             statementService.selectOffer(offer);
             endTime1.set(System.currentTimeMillis());
-            System.out.println("Время первого: " + (endTime1.get() - startTime1.get()));
             return endTime1.get() - startTime1.get();
         }, executor);
 
@@ -133,7 +130,6 @@ class StatementServiceConcurrencyTest {
             startTime2.set(System.currentTimeMillis());
             statementService.selectOffer(offer);
             endTime2.set(System.currentTimeMillis());
-            System.out.println("Время второго: " + (endTime2.get() - startTime2.get()));
             return endTime2.get() - startTime2.get();
         }, executor);
 
