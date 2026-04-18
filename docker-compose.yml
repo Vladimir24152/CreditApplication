@@ -58,7 +58,7 @@ services:
       - "8082:8082"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - DEAL_SERVICE_URL=http://deal:8081
+      - DEAL_SERVICE_ADDRESS=http://deal:8081
     networks:
       - credit-network
 

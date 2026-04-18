@@ -27,7 +27,7 @@ public class DealClientConfig {
 
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
-    @Value("${deal.service.url:http://localhost:8081}")
+    @Value("${client.deal.address:http://localhost:8081}")
     private String serviceUrl;
 
     private final LoggingInternalInterceptor loggingInternalInterceptor;

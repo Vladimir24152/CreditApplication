@@ -15,11 +15,21 @@ logging:
     org.neoflex.statement.interceptor: DEBUG
     org.springframework.web: INFO
     org.springframework.web.servlet: INFO
+#
+#deal:
+#  service:
+#    url: ${DEAL_SERVICE_URL:http://deal:8081}
+#  endpoints:
+#    base: ${DEAL_ENDPOINTS_BASE:/api/v1/deal}
+#    statement: ${DEAL_ENDPOINTS_STATEMENT:/statement}
+#    offer-select: ${DEAL_ENDPOINTS_OFFER-SELECT:/offer/select}
 
-deal:
-  service:
-    url: ${DEAL_SERVICE_URL:http://deal:8081}
-  endpoints:
-    base: ${DEAL_ENDPOINTS_BASE:/api/v1/deal}
-    statement: ${DEAL_ENDPOINTS_STATEMENT:/statement}
-    offer-select: ${DEAL_ENDPOINTS_OFFER-SELECT:/offer/select}
+client:
+  deal:
+    address: ${DEAL_SERVICE_ADDRESS:http://localhost:8081}
+    url: ${CLIENT_DEAL_URL:/api/v1/deal}
+    api:
+      calculate:
+        path: ${CLIENT_DEAL_API_CALCULATE_PATH:/statement}
+      select:
+        path: ${CLIENT_DEAL_API_SELECT_PATH:/offer/select}
