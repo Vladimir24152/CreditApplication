@@ -13,11 +13,11 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.neoflex.calculator.annotations.Adult;
-import org.neoflex.calculator.annotations.AgeRange;
-import org.neoflex.calculator.annotations.RatioOfTheAmountAndSalary;
 import org.neoflex.calculator.enums.Gender;
 import org.neoflex.calculator.enums.MaritalStatus;
+import org.neoflex.calculator.validation.annotation.Adult;
+import org.neoflex.calculator.validation.annotation.AgeRange;
+import org.neoflex.calculator.validation.annotation.RatioOfTheAmountAndSalary;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

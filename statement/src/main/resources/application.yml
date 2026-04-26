@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: statement-service
+  profiles:
+    active: default
+
+server:
+  port: 8082
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+
+#deal:
+#  service:
+#    url: http://localhost:8081
+#  endpoints:
+#    base: /api/v1/deal
+#    statement: /statement
+#    offer-select: /offer/select
+
+client:
+  deal:
+    address: http://localhost:8081
+    url: /api/v1/deal
+    api:
+      calculate:
+        path: /statement
+      select:
+        path: /offer/select

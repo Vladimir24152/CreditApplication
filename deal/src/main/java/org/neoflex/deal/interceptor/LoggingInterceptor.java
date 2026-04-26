@@ -14,7 +14,10 @@ public class LoggingInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request,HttpServletResponse response,Object handler) throws Exception {
-        log.info("Входящий запрос: {}, {}, ",request.getMethod(),request.getRequestURI());
+        log.info(">> Входящий запрос: метод = {}, URL = {}",
+                request.getMethod(),
+                request.getRequestURI()
+        );
         return true;
     }
 
@@ -24,7 +27,11 @@ public class LoggingInterceptor implements HandlerInterceptor {
                            Object handler,
                            @Nullable ModelAndView modelAndView) throws Exception {
 
-        log.info("Статус ответа на запрос {} {}: {} ",request.getMethod(),request.getRequestURI(),response.getStatus());
+        log.info("<< Статус ответа на запрос {} {}: status = {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                response.getStatus()
+        );
     }
 
     @Override

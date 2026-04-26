@@ -1,5 +1,6 @@
 package org.neoflex.deal.model.jsonb;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +18,7 @@ public class StatusHistory {
 
     private ApplicationStatus status;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
     private LocalDateTime time;
 
     private ChangeType changeType;

@@ -1,18 +1,18 @@
 package org.neoflex.deal.exception;
 
 import lombok.Getter;
-import org.neoflex.deal.dto.response.HttpErrorResponse;
+import org.neoflex.deal.dto.response.HttpErrorInternalServiceResponse;
 
 @Getter
 public class InternalServiceException extends RuntimeException {
     private final String serviceName;
     private final String message;
-    private final HttpErrorResponse httpErrorResponse;
+    private final HttpErrorInternalServiceResponse httpErrorInternalServiceResponse;
 
-    public InternalServiceException(String serviceName,String message, HttpErrorResponse httpErrorResponse) {
+    public InternalServiceException(String serviceName, String message, HttpErrorInternalServiceResponse httpErrorInternalServiceResponse) {
         super(message);
         this.serviceName = serviceName;
         this.message = message;
-        this.httpErrorResponse = httpErrorResponse;
+        this.httpErrorInternalServiceResponse = httpErrorInternalServiceResponse;
     }
 }

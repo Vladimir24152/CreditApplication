@@ -4,6 +4,12 @@ spring:
   profiles:
     active: default
 
+  liquibase:
+    enabled: true
+    change-log: classpath:db.changelog/db.changelog-master.xml
+    default-schema: public
+    drop-first: false
+
 server:
   port: 8081
 
@@ -18,3 +24,7 @@ springdoc:
 calculator:
   service:
     url: http://localhost:8080
+  endpoints:
+    base: /api/v1/calculator
+    offers: /offers
+    calc: /calc

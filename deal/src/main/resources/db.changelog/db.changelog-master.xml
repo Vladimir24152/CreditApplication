@@ -1,0 +1,11 @@
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <include file="db.changelog/3.0.0/ddl/08.04.2026-01--create-table-client.sql"/>
+    <include file="db.changelog/3.0.0/ddl/08.04.2026-02--create-table-credit.sql"/>
+    <include file="db.changelog/3.0.0/ddl/08.04.2026-03--create-table-statement.sql"/>
+
+</databaseChangeLog>

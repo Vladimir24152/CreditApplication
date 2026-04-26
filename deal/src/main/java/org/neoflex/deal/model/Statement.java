@@ -75,7 +75,7 @@ public class Statement {
     private LocalDateTime signDate;
 
     @Comment("Одноразовый код подтверждения для подписания кредитного договора")
-    @Column(name = "ses_сode")
+    @Column(name = "ses_code")
     private String sesCode;
 
     @JdbcTypeCode(SqlTypes.JSON)

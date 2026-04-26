@@ -28,6 +28,6 @@ public class HttpErrorInternalServiceResponse {
 
         private final String message;
 
-        private final HttpErrorResponse httpErrorResponse;
+        private final HttpErrorInternalServiceResponse httpErrorInternalServiceResponse;
     }
 }

@@ -1,6 +1,7 @@
 package org.neoflex.deal.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.deal.client.calculator.CalculatorClientService;
@@ -35,11 +36,7 @@ public class StatementService {
     private final ClientMapper clientMapper;
 
     @Transactional
-    public List<LoanOfferDto> calculationOfPossibleLoanTerms(LoanStatementRequestDto request){
-
-        if (request == null) {
-            throw new NullPointerException("Отсутствует тело запроса");
-        }
+    public List<LoanOfferDto> calculateTerms(@NonNull LoanStatementRequestDto request) {
 
         Client savedClient = clientRepository.save(clientMapper.toClient(request));
         log.info("Клиент сохранен: clientId={}", savedClient.getClientId());
@@ -68,11 +65,7 @@ public class StatementService {
     }
 
     @Transactional
-    public void choosingOneOfTheLoanOffers(LoanOfferDto request){
-
-        if (request == null) {
-            throw new NullPointerException("Отсутствует тело запроса");
-        }
+    public void selectOffer(@NonNull LoanOfferDto request) {
 
         Statement statement = statementRepository.findById(request.getStatementId())
                 .orElseThrow(() -> new EntityNotFoundException(
