@@ -10,6 +10,10 @@ spring:
     default-schema: public
     drop-first: false
 
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
 server:
   port: 8081
 

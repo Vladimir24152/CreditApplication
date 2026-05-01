@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,6 +70,9 @@ class CreditServiceTest {
 
     @Mock
     private ClientService clientService;
+
+    @Mock
+    private KafkaProducerService kafkaProducerService;
 
     @InjectMocks
     private CreditService creditService;
@@ -201,6 +205,7 @@ class CreditServiceTest {
         when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         creditService.completeRegistration(finishRequest, statementId);
 
@@ -270,6 +275,7 @@ class CreditServiceTest {
         when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         assertEquals(ApplicationStatus.APPROVED, testStatement.getStatus());
 
@@ -289,6 +295,7 @@ class CreditServiceTest {
         when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         assertEquals(0, testStatement.getStatusHistory().size());
 
@@ -311,6 +318,7 @@ class CreditServiceTest {
         when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         creditService.completeRegistration(finishRequest, statementId);
 
@@ -327,6 +335,7 @@ class CreditServiceTest {
         when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         creditService.completeRegistration(finishRequest, statementId);
 
@@ -345,6 +354,7 @@ class CreditServiceTest {
         when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         creditService.completeRegistration(finishRequest, statementId);
 
@@ -360,6 +370,7 @@ class CreditServiceTest {
         when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         creditService.completeRegistration(finishRequest, statementId);
 
@@ -375,6 +386,7 @@ class CreditServiceTest {
         when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         creditService.completeRegistration(finishRequest, statementId);
 
@@ -390,6 +402,7 @@ class CreditServiceTest {
         when(creditMapper.toCredit(creditDto, CreditStatus.CALCULATED)).thenReturn(credit);
         when(creditRepository.save(any())).thenReturn(credit);
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         assertNull(testStatement.getCredit());
 

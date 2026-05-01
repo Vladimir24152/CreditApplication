@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.neoflex.creditapplicationsupportstarter.dto.EmailMessage;
 import org.neoflex.deal.client.calculator.CalculatorClientService;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.neoflex.creditapplicationsupportstarter.enums.Theme.FINISH_REGISTRATION;
 import static org.neoflex.deal.model.enums.ApplicationStatus.APPROVED;
 import static org.neoflex.deal.model.enums.ApplicationStatus.PREAPPROVAL;
 import static org.neoflex.deal.model.enums.ChangeType.AUTOMATIC;
@@ -32,6 +34,7 @@ public class StatementService {
     private final StatementRepository statementRepository;
 
     private final CalculatorClientService calculatorClientService;
+    private final KafkaProducerService kafkaProducerService;
 
     private final ClientMapper clientMapper;
 
@@ -82,5 +85,14 @@ public class StatementService {
 
         statementRepository.save(statement);
         log.info("Заявка {} успешно обновлена: статус = {}", request.getStatementId(), APPROVED);
+
+        EmailMessage emailMessage = EmailMessage.builder()
+                .address(statement.getClient().getEmail())
+                .theme(FINISH_REGISTRATION)
+                .statementId(statement.getStatementId().getMostSignificantBits())
+                .text("Для подготовки документов необходимо завершить регистрацию.")
+                .build();
+
+        kafkaProducerService.send(emailMessage);
     }
 }
