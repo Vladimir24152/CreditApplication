@@ -38,8 +38,8 @@ services:
     depends_on:
       postgres_db:
         condition: service_healthy
-      kafka:
-        condition: service_started
+      init-kafka:
+        condition: service_completed_successfully
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_db:5432/demo_db
@@ -59,6 +59,9 @@ services:
     container_name: statement-service
     ports:
       - "8082:8082"
+    depends_on:
+      deal:
+        condition: service_started
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - DEAL_SERVICE_ADDRESS=http://deal:8081
@@ -110,6 +113,33 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - credit-network
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: init-kafka
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: |
+      echo 'Waiting 10 seconds for Kafka to fully stabilize...';
+      sleep 10;
+      echo 'Creating topics...';
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic finish-registration --replication-factor 1 --partitions 1;
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic create-documents --replication-factor 1 --partitions 1;
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic send-documents --replication-factor 1 --partitions 1;
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic send-ses --replication-factor 1 --partitions 1;
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic credit-issued --replication-factor 1 --partitions 1;
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic statement-denied --replication-factor 1 --partitions 1;
+      echo 'Topics created successfully!';
     networks:
       - credit-network
 

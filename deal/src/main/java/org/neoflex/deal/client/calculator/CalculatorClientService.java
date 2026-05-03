@@ -18,7 +18,7 @@ public class CalculatorClientService {
 
     public List<LoanOfferDto> calculateLoanOffers(LoanStatementRequestDto request){
         return calculatorClient.calculateLoanOffers(request);
-    };
+    }
 
 
     public CreditDto calculateCredit(ScoringDataDto request){

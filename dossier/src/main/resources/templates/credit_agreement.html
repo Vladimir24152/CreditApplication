@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Кредитный договор</title>
+    <style>
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 12px;
+            margin: 2cm;
+        }
+        h1 {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        .header-info {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            background-color: #e9ecef;
+            padding: 5px;
+        }
+        .content-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .content-table td, .content-table th {
+            border: 1px solid #ddd;
+            padding: 6px;
+        }
+        .content-table th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+        .total {
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 10px;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+<h1>КРЕДИТНЫЙ ДОГОВОР № <span th:text="${statementId}"></span></h1>
+<div class="header-info">
+    г. Москва, <span th:text="${#temporals.format(signDate, 'dd.MM.yyyy')}"></span>
+</div>
+
+<div class="section-title">1. СТОРОНЫ ДОГОВОРА</div>
+<p>
+    <strong>Заёмщик:</strong> <span th:text="${lastName}"></span> <span th:text="${firstName}"></span> <span th:text="${middleName} ?: ''"></span>,
+    <span th:text="${#temporals.format(birthDate, 'dd.MM.yyyy')}"></span> г.р.<br/>
+    <strong>Паспорт:</strong> <span th:text="${passportSeries}"></span> <span th:text="${passportNumber}"></span>, выдан <span th:text="${#temporals.format(passportIssueDate, 'dd.MM.yyyy')}"></span>,
+    код подразделения <span th:text="${passportIssueBranch}"></span><br/>
+    <strong>Email:</strong> <span th:text="${email}"></span><br/>
+    <strong>Счёт:</strong> <span th:text="${accountNumber}"></span>
+</p>
+
+<div class="section-title">2. УСЛОВИЯ КРЕДИТА</div>
+<table class="content-table">
+    <tr>
+        <td style="width: 50%;">Сумма кредита</td>
+        <td><span th:text="${#numbers.formatDecimal(amount, 0, 2)}"></span> руб.</td>
+    </tr>
+    <tr>
+        <td>Срок кредита</td>
+        <td><span th:text="${term}"></span> месяцев</td>
+    </tr>
+    <tr>
+        <td>Процентная ставка</td>
+        <td><span th:text="${#numbers.formatDecimal(rate, 0, 2)}"></span> % годовых</td>
+    </tr>
+    <tr>
+        <td>Ежемесячный платёж</td>
+        <td><span th:text="${#numbers.formatDecimal(monthlyPayment, 0, 2)}"></span> руб.</td>
+    </tr>
+    <tr>
+        <td>Полная стоимость кредита (ПСК)</td>
+        <td><span th:text="${#numbers.formatDecimal(psk, 0, 2)}"></span> руб.</td>
+    </tr>
+    <tr>
+        <td>Страховка</td>
+        <td><span th:if="${isInsuranceEnabled}">Включена</span><span th:unless="${isInsuranceEnabled}">Не включена</span></td>
+    </tr>
+    <tr>
+        <td>Зарплатный клиент</td>
+        <td><span th:if="${isSalaryClient}">Да</span><span th:unless="${isSalaryClient}">Нет</span></td>
+    </tr>
+</table>
+
+<div class="section-title">3. ГРАФИК ПЛАТЕЖЕЙ</div>
+<table class="content-table">
+    <thead>
+    <tr>
+        <th>№</th>
+        <th>Дата платежа</th>
+        <th>Основной долг</th>
+        <th>Проценты</th>
+        <th>Остаток долга</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="p : ${paymentSchedule}">
+        <td th:text="${p.number}"></td>
+        <td th:text="${#temporals.format(p.date, 'dd.MM.yyyy')}"></td>
+        <td th:text="${#numbers.formatDecimal(p.principalPayment, 0, 2)}"></td>
+        <td th:text="${#numbers.formatDecimal(p.interestPayment, 0, 2)}"></td>
+        <td th:text="${#numbers.formatDecimal(p.remainingDebt, 0, 2)}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="footer">
+    Данный документ сформирован автоматически и не требует подписи в бумажном виде.<br/>
+    © 2025 Кредитная система
+</div>
+
+</body>
+</html>

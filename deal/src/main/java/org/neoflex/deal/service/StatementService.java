@@ -6,9 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.creditapplicationsupportstarter.dto.EmailMessage;
 import org.neoflex.deal.client.calculator.CalculatorClientService;
+import org.neoflex.deal.dto.DealDocumentDto;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
 import org.neoflex.deal.mapper.ClientMapper;
+import org.neoflex.deal.mapper.StatementMapper;
 import org.neoflex.deal.model.Client;
 import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.jsonb.StatusHistory;
@@ -17,8 +19,10 @@ import org.neoflex.deal.repository.StatementRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.neoflex.creditapplicationsupportstarter.enums.Theme.FINISH_REGISTRATION;
 import static org.neoflex.deal.model.enums.ApplicationStatus.APPROVED;
@@ -37,6 +41,7 @@ public class StatementService {
     private final KafkaProducerService kafkaProducerService;
 
     private final ClientMapper clientMapper;
+    private final StatementMapper statementMapper;
 
     @Transactional
     public List<LoanOfferDto> calculateTerms(@NonNull LoanStatementRequestDto request) {
@@ -89,10 +94,21 @@ public class StatementService {
         EmailMessage emailMessage = EmailMessage.builder()
                 .address(statement.getClient().getEmail())
                 .theme(FINISH_REGISTRATION)
-                .statementId(statement.getStatementId().getMostSignificantBits())
-                .text("Для подготовки документов необходимо завершить регистрацию.")
+                .statementId(statement.getStatementId())
+                .text("Ваша заявка предварительно одобрена, завершите оформление.")
                 .build();
 
         kafkaProducerService.send(emailMessage);
+    }
+
+    @Transactional(readOnly = true)
+    public DealDocumentDto getInfo(UUID statementId) {
+
+        Statement statement = statementRepository.findByIdWithDetailsReadOnly(statementId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Не найдена заявка с id указанным в запросе: %s",statementId))
+                );
+
+        return statementMapper.toDealDocumentDto(statement, LocalDate.now());
     }
 }

@@ -1,4 +1,4 @@
-package org.neoflex.config;
+package org.neoflex.dossier.config;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;

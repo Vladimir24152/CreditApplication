@@ -1,4 +1,4 @@
-package org.neoflex.service;
+package org.neoflex.dossier.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,12 +7,15 @@ import org.neoflex.creditapplicationsupportstarter.dto.EmailMessage;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class KafkaConsumerService {
 
     private final EmailService emailService;
+    private final DocumentService documentService;
 
     @KafkaListener(topics = "finish-registration", groupId = "dossier-group")
     public void handleFinishRegistration(EmailMessage message) {
@@ -28,8 +31,8 @@ public class KafkaConsumerService {
 
     @KafkaListener(topics = "send-documents", groupId = "dossier-group")
     public void handleSendDocuments(EmailMessage message) {
-        log.info("Получено сообщение по теме {}: statementId={}",message.getTheme(),message.getStatementId());
-        emailService.sendEmail(message);
+        log.info("Получено сообщение send-documents: statementId={}", message.getStatementId());
+        documentService.createDocument(message);
     }
 
     @KafkaListener(topics = "send-ses", groupId = "dossier-group")

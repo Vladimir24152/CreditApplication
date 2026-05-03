@@ -84,7 +84,7 @@ public class CreditService {
         EmailMessage message = EmailMessage.builder()
                 .address(statement.getClient().getEmail())
                 .theme(CREATE_DOCUMENTS)
-                .statementId(statement.getStatementId().getMostSignificantBits())
+                .statementId(statementId)
                 .text("Документы по вашей заявке созданы. Для подписания перейдите по ссылке.")
                 .build();
         kafkaProducerService.send(message);

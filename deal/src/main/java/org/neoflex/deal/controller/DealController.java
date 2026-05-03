@@ -10,11 +10,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.neoflex.creditapplicationsupportstarter.exception.HttpErrorInternalServiceResponse;
+import org.neoflex.deal.dto.DealDocumentDto;
 import org.neoflex.deal.dto.FinishRegistrationRequestDto;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
 import org.neoflex.deal.service.CreditService;
 import org.neoflex.deal.service.StatementService;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -250,5 +252,10 @@ public class DealController {
             @PathVariable UUID statementId
     ){
         creditService.completeRegistration(request, statementId);
+    }
+
+    @GetMapping("/{statementId}")
+    public DealDocumentDto getInfo(@PathVariable UUID statementId){
+        return statementService.getInfo(statementId);
     }
 }

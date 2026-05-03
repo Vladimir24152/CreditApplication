@@ -31,6 +31,7 @@
         <java.version>21</java.version>
         <swagger-annotations.version>2.2.29</swagger-annotations.version>
         <support.version>1.0.0</support.version>
+        <pdf.openpdf.version>9.1.22</pdf.openpdf.version>
     </properties>
 
     <dependencies>
@@ -92,6 +93,17 @@
             <artifactId>credit-application-support-starter</artifactId>
             <version>${support.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xhtmlrenderer</groupId>
+            <artifactId>flying-saucer-pdf-openpdf</artifactId>
+            <version>${pdf.openpdf.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -145,6 +157,14 @@
                 </executions>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 
 </project>

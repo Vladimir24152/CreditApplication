@@ -52,3 +52,12 @@ calculator:
     base: "${CALCULATOR_ENDPOINTS_BASE:/api/v1/calculator}"
     offers: "${CALCULATOR_ENDPOINTS_OFFERS:/offers}"
     calc: "${CALCULATOR_ENDPOINTS_CALC:/calc}"
+
+kafka:
+  topics:
+    finish-registration: finish-registration
+    create-documents: create-documents
+    send-documents: send-documents
+    send-ses: send-ses
+    credit-issued: credit-issued
+    statement-denied: statement-denied

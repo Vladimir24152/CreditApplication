@@ -1,4 +1,4 @@
-package org.neoflex.service;
+package org.neoflex.dossier.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -7,9 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.neoflex.creditapplicationsupportstarter.dto.EmailMessage;
 import org.neoflex.creditapplicationsupportstarter.enums.Theme;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -25,10 +28,31 @@ public class EmailService {
         String subject = getSubject(message.getTheme());
         String content = buildEmailContent(message);
 
-        send(message.getAddress(), subject, content);
+        sendSimpleEmail(message.getAddress(), subject, content);
     }
 
-    public void send(String to, String subject, String text) {
+    public void sendEmailWithDocument(String to, String subject, String text, byte[] attachment, String fileName) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(text, true);
+
+            if (attachment != null && attachment.length > 0) {
+                helper.addAttachment(fileName, new ByteArrayResource(attachment), "application/pdf");
+            }
+
+            mailSender.send(message);
+            log.info("Письмо с вложением отправлено на адрес: {}, тема: {}", to, subject);
+        } catch (MessagingException e) {
+            log.error("Не удалось отправить письмо с вложением: {}", e.getMessage(), e);
+        }
+    }
+
+    public void sendSimpleEmail(String to, String subject, String text) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -58,7 +82,7 @@ public class EmailService {
     }
 
     private String buildEmailContent(EmailMessage message) {
-        Long statementId = message.getStatementId();
+        UUID statementId = message.getStatementId();
         String text = message.getText();
 
         String htmlHeader = """
@@ -95,8 +119,7 @@ public class EmailService {
                     <div class="content">
                         <p>Уважаемый клиент!</p>
                         <p>%s</p>
-                        <p>Номер вашей заявки: <strong>%d</strong></p>
-                        <p><a href="http://localhost:8082/api/v1/statement/finish/%d" class="button">Завершить регистрацию</a></p>
+                        <p>Номер вашей заявки: <strong>%s</strong></p>
                         <p>С уважением,<br>Самый лучший в мире банк</p>
                     </div>
                 </div>
@@ -108,8 +131,8 @@ public class EmailService {
                     <div class="content">
                         <p>Уважаемый клиент!</p>
                         <p>%s</p>
-                        <p>Номер заявки: <strong>%d</strong></p>
-                        <p><a href="http://localhost:8081/api/v1/deal/document/%d/send">Перейти к документам</a></p>
+                        <p>Номер заявки: <strong>%s</strong></p>
+                        <p><a href="http://deal:8081/api/v1/deal/document/%s/send">Сформировать документы</a></p>
                         <p>С уважением,<br>Команда кредитного отдела</p>
                     </div>
                 </div>
@@ -121,8 +144,8 @@ public class EmailService {
                     <div class="content">
                         <p>Уважаемый клиент!</p>
                         <p>%s</p>
-                        <p>Номер заявки: <strong>%d</strong></p>
-                        <p><a href="http://localhost:8081/api/v1/deal/document/%d/sign">Подписать документы</a></p>
+                        <p>Номер заявки: <strong>%s</strong></p>
+                        <p><a href="http://deal:8081/api/v1/deal/document/%s/sign">Подписать документы</a></p>
                         <p>С уважением,<br>Команда кредитного отдела</p>
                     </div>
                 </div>
@@ -134,9 +157,9 @@ public class EmailService {
                     <div class="content">
                         <p>Уважаемый клиент!</p>
                         <p>%s</p>
-                        <p>Номер заявки: <strong>%d</strong></p>
+                        <p>Номер заявки: <strong>%s</strong></p>
                         <p><strong>Введите код: %s</strong></p>
-                        <p><a href="http://localhost:8081/api/v1/deal/document/%d/code">Подтвердить</a></p>
+                        <p><a href="http://deal:8081/api/v1/deal/document/%s/code">Подтвердить</a></p>
                         <p>С уважением,<br>Команда кредитного отдела</p>
                     </div>
                 </div>
@@ -147,7 +170,7 @@ public class EmailService {
                     <div class="header"><h2 style="background-color: #4CAF50;">Кредит одобрен!</h2></div>
                     <div class="content">
                         <p>Уважаемый клиент!</p>
-                        <p>Поздравляем! Ваша кредитная заявка <strong>№%d</strong> одобрена.</p>
+                        <p>Поздравляем! Ваша кредитная заявка <strong>№%s</strong> одобрена.</p>
                         <p>%s</p>
                         <p>Деньги будут перечислены в течение 24 часов на указанный вами счёт.</p>
                         <p>С уважением,<br>Команда кредитного отдела</p>
@@ -161,7 +184,7 @@ public class EmailService {
                     <div class="content">
                         <p>Уважаемый клиент!</p>
                         <p>%s</p>
-                        <p>Номер заявки: <strong>%d</strong></p>
+                        <p>Номер заявки: <strong>%s</strong></p>
                         <p>Если у вас есть вопросы, пожалуйста, свяжитесь с нашим контакт-центром.</p>
                         <p>С уважением,<br>Команда кредитного отдела</p>
                     </div>

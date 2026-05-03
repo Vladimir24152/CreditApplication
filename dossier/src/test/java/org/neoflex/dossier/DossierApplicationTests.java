@@ -1,4 +1,4 @@
-package org.neoflex;
+package org.neoflex.dossier;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
