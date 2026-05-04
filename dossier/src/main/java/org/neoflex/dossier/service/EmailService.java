@@ -13,8 +13,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,10 +28,10 @@ public class EmailService {
         String subject = getSubject(message.getTheme());
         String content = buildEmailContentService.buildEmailContent(message);
 
-        sendSimpleEmail(message.getAddress(), subject, content);
+        sendEmail(message.getAddress(), subject, content);
     }
 
-    public void sendEmailWithDocument(String to, String subject, String text, byte[] attachment, String fileName) {
+    public void sendEmail(String to, String subject, String text, byte[] attachment, String fileName) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -54,7 +52,7 @@ public class EmailService {
         }
     }
 
-    public void sendSimpleEmail(String to, String subject, String text) {
+    public void sendEmail(String to, String subject, String text) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
