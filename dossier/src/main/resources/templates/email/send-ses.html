@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Код подтверждения</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #4CAF50; color: white; padding: 10px; text-align: center; }
+        .content { padding: 20px; border: 1px solid #ddd; }
+        .footer { font-size: 12px; color: #999; text-align: center; margin-top: 20px; }
+        .code { font-size: 24px; font-weight: bold; color: #4CAF50; }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .button:hover { background-color: #45a049; }
+        .code-input { padding: 10px; font-size: 16px; border: 1px solid #ddd; border-radius: 5px; width: 200px; text-align: center; }
+        form { margin: 20px 0; }
+        .form-group { margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header"><h2>Подтверждение операции</h2></div>
+    <div class="content">
+        <p>Уважаемый клиент!</p>
+        <p>Для подтверждения подписания кредитного договора введите код:</p>
+        <p class="code" th:text="${code}"></p>
+        <p>Номер заявки: <strong th:text="${statementId}"></strong></p>
+
+        <form th:action="${dealUrl} + '/api/v1/deal/document/' + ${statementId} + '/code'" method="post">
+            <div class="form-group">
+                <label for="code">Код подтверждения:</label><br><br>
+                <input type="text" id="code" name="code" class="code-input" placeholder="Введите 6-значный код" required pattern="[0-9]{6}" maxlength="6">
+            </div>
+            <button type="submit" class="button">Подтвердить</button>
+        </form>
+
+        <p>С уважением,<br>Команда кредитного отдела</p>
+    </div>
+    <div class="footer">
+        <p>Это автоматическое сообщение, пожалуйста, не отвечайте на него.</p>
+        <p>© 2026 Кредитная система</p>
+    </div>
+</div>
+</body>
+</html>

@@ -4,8 +4,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.neoflex.deal.client.calculator.CalculatorClientService;
 import org.neoflex.deal.dto.CreditDto;
+import org.neoflex.deal.dto.EmailMessage;
 import org.neoflex.deal.dto.FinishRegistrationRequestDto;
 import org.neoflex.deal.dto.ScoringDataDto;
 import org.neoflex.deal.mapper.ClientMapper;
@@ -25,6 +27,7 @@ import java.util.UUID;
 import static org.neoflex.deal.model.enums.ApplicationStatus.APPROVED;
 import static org.neoflex.deal.model.enums.ApplicationStatus.CC_APPROVED;
 import static org.neoflex.deal.model.enums.ChangeType.AUTOMATIC;
+import static org.neoflex.deal.model.enums.Theme.CREATE_DOCUMENTS;
 
 @Service
 @Slf4j
@@ -36,6 +39,7 @@ public class CreditService {
 
     private final CalculatorClientService calculatorClientService;
     private final ClientService clientService;
+    private final KafkaProducerService kafkaProducerService;
 
     private final ClientMapper clientMapper;
     private final CreditMapper creditMapper;
@@ -76,6 +80,15 @@ public class CreditService {
         clientService.updateClient(statement.getClient().getClientId(), request);
 
         statementRepository.save(statement);
+
+        EmailMessage message = EmailMessage.builder()
+                .address(statement.getClient().getEmail())
+                .theme(CREATE_DOCUMENTS)
+                .statementId(statementId)
+                .text("Документы по вашей заявке созданы. Для подписания перейдите по ссылке.")
+                .build();
+        kafkaProducerService.send(message);
+
         log.info("Завершение регистрации для заявки {} успешно выполнено", statementId);
     }
 }

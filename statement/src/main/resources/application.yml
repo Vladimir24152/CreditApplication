@@ -15,14 +15,6 @@ springdoc:
     operationsSorter: method
     tagsSorter: alpha
 
-#deal:
-#  service:
-#    url: http://localhost:8081
-#  endpoints:
-#    base: /api/v1/deal
-#    statement: /statement
-#    offer-select: /offer/select
-
 client:
   deal:
     address: http://localhost:8081
@@ -32,3 +24,8 @@ client:
         path: /statement
       select:
         path: /offer/select
+
+credit:
+  support:
+    logging:
+      enabled: true

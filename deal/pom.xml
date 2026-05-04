@@ -23,9 +23,27 @@
         <springdoc.version>2.8.5</springdoc.version>
         <testcontainers.version>1.19.8</testcontainers.version>
         <mapstruct.version>1.6.3</mapstruct.version>
+        <support.version>1.0.0</support.version>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.neoflex</groupId>
+            <artifactId>credit-application-support-starter</artifactId>
+            <version>${support.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>

@@ -9,12 +9,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.neoflex.creditapplicationsupportstarter.exception.HttpErrorInternalServiceResponse;
+import org.neoflex.deal.dto.DealDocumentDto;
 import org.neoflex.deal.dto.FinishRegistrationRequestDto;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
-import org.neoflex.deal.dto.response.HttpErrorInternalServiceResponse;
 import org.neoflex.deal.service.CreditService;
 import org.neoflex.deal.service.StatementService;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -250,5 +252,36 @@ public class DealController {
             @PathVariable UUID statementId
     ){
         creditService.completeRegistration(request, statementId);
+    }
+
+    @Operation(summary = "Получение информации для составления документов для оформления кредита",
+            description = "Принимает id заявки на кредит и возвращает информацию для составления документов")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Успешное получение информации по кредиту",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DealDocumentDto.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "404",
+                    description = "Не найдена заявка с id указанным в запросе",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class)
+                    )
+            ),
+            @ApiResponse(responseCode = "500",
+                    description = "Внутренняя ошибка сервера при обработке запроса",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class)
+                    )
+            )
+    })
+    @GetMapping("/{statementId}")
+    public DealDocumentDto getInfo(@PathVariable UUID statementId){
+        return statementService.getInfo(statementId);
     }
 }
