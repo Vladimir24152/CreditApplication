@@ -2,9 +2,9 @@ package org.neoflex.dossier.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportstarter.dto.EmailMessage;
 import org.neoflex.dossier.client.DealClientService;
 import org.neoflex.dossier.dto.DealDocumentDto;
+import org.neoflex.dossier.dto.EmailMessage;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

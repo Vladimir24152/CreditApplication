@@ -2,8 +2,8 @@ package org.neoflex.deal.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportstarter.dto.EmailMessage;
 import org.neoflex.deal.config.KafkaTopicsProperties;
+import org.neoflex.deal.dto.EmailMessage;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 

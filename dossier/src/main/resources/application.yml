@@ -19,6 +19,12 @@ spring:
           writetimeout: 5000
     protocol: smtp
     default-encoding: UTF-8
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+    check-template-location: true
+    encoding: UTF-8
 
 springdoc:
   api-docs:
@@ -36,6 +42,10 @@ deal:
     url: http://deal:8081
   endpoints:
     base: /api/v1/deal
+
+external:
+  deal:
+    url: http://localhost:8081
 
 logging:
   org.neoflex: DEBUG

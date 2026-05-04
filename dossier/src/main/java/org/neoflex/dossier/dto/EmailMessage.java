@@ -1,4 +1,4 @@
-package org.neoflex.creditapplicationsupportstarter.dto;
+package org.neoflex.dossier.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
@@ -10,7 +10,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.neoflex.creditapplicationsupportstarter.enums.Theme;
+import org.neoflex.dossier.enums.Theme;
+
 
 import java.util.UUID;
 

@@ -2,8 +2,7 @@ package org.neoflex.dossier.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.neoflex.creditapplicationsupportstarter.dto.EmailMessage;
+import org.neoflex.dossier.dto.EmailMessage;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 

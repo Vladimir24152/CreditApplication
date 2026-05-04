@@ -1,6 +1,7 @@
 package org.neoflex.deal.config;
 
-import org.neoflex.creditapplicationsupportstarter.enums.Theme;
+
+import org.neoflex.deal.model.enums.Theme;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 

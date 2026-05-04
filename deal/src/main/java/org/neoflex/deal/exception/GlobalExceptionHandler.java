@@ -29,7 +29,7 @@ public class GlobalExceptionHandler extends BaseGlobalExceptionHandler {
 
         return buildErrorInternalServiceResponse(
                 HttpStatus.FORBIDDEN,
-                "ENTITY_NOT_FOUND",
+                "FORBIDDEN",
                 e.getMessage()
         );
     }

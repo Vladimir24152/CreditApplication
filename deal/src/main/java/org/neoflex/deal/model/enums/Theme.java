@@ -1,4 +1,4 @@
-package org.neoflex.creditapplicationsupportstarter.enums;
+package org.neoflex.deal.model.enums;
 
 public enum Theme {
     FINISH_REGISTRATION,

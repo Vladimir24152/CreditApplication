@@ -4,9 +4,9 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportstarter.dto.EmailMessage;
 import org.neoflex.deal.client.calculator.CalculatorClientService;
 import org.neoflex.deal.dto.DealDocumentDto;
+import org.neoflex.deal.dto.EmailMessage;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
 import org.neoflex.deal.mapper.ClientMapper;
@@ -24,10 +24,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.neoflex.creditapplicationsupportstarter.enums.Theme.FINISH_REGISTRATION;
 import static org.neoflex.deal.model.enums.ApplicationStatus.APPROVED;
 import static org.neoflex.deal.model.enums.ApplicationStatus.PREAPPROVAL;
 import static org.neoflex.deal.model.enums.ChangeType.AUTOMATIC;
+import static org.neoflex.deal.model.enums.Theme.FINISH_REGISTRATION;
 
 @Service
 @Slf4j

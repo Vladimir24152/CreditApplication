@@ -4,8 +4,9 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportstarter.dto.EmailMessage;
-import org.neoflex.creditapplicationsupportstarter.enums.Theme;
+
+import org.neoflex.dossier.dto.EmailMessage;
+import org.neoflex.dossier.enums.Theme;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -20,13 +21,14 @@ import java.util.UUID;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final BuildEmailContentService buildEmailContentService;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
 
     public void sendEmail(EmailMessage message) {
         String subject = getSubject(message.getTheme());
-        String content = buildEmailContent(message);
+        String content = buildEmailContentService.buildEmailContent(message);
 
         sendSimpleEmail(message.getAddress(), subject, content);
     }
@@ -79,119 +81,5 @@ public class EmailService {
             case CREDIT_ISSUED -> "Кредит одобрен - Поздравляем!";
             case STATEMENT_DENIED -> "Решение по кредитной заявке";
         };
-    }
-
-    private String buildEmailContent(EmailMessage message) {
-        UUID statementId = message.getStatementId();
-        String text = message.getText();
-
-        String htmlHeader = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body { font-family: Arial, sans-serif; color: #333; }
-                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background-color: #4CAF50; color: white; padding: 10px; text-align: center; }
-                    .content { padding: 20px; border: 1px solid #ddd; }
-                    .footer { font-size: 12px; color: #999; text-align: center; margin-top: 20px; }
-                    .button { background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
-                </style>
-            </head>
-            <body>
-            """;
-
-        String htmlFooter = """
-                    <div class="footer">
-                        <p>Это автоматическое сообщение, пожалуйста, не отвечайте на него.</p>
-                        <p>© 2024 Кредитная система</p>
-                    </div>
-                </div>
-            </body>
-            </html>
-            """;
-
-        String body = switch (message.getTheme()) {
-            case FINISH_REGISTRATION -> String.format("""
-                <div class="container">
-                    <div class="header"><h2>Завершение регистрации</h2></div>
-                    <div class="content">
-                        <p>Уважаемый клиент!</p>
-                        <p>%s</p>
-                        <p>Номер вашей заявки: <strong>%s</strong></p>
-                        <p>С уважением,<br>Самый лучший в мире банк</p>
-                    </div>
-                </div>
-                """, text, statementId, statementId);
-
-            case CREATE_DOCUMENTS -> String.format("""
-                <div class="container">
-                    <div class="header"><h2>Документы созданы</h2></div>
-                    <div class="content">
-                        <p>Уважаемый клиент!</p>
-                        <p>%s</p>
-                        <p>Номер заявки: <strong>%s</strong></p>
-                        <p><a href="http://deal:8081/api/v1/deal/document/%s/send">Сформировать документы</a></p>
-                        <p>С уважением,<br>Команда кредитного отдела</p>
-                    </div>
-                </div>
-                """, text, statementId, statementId);
-
-            case SEND_DOCUMENTS -> String.format("""
-                <div class="container">
-                    <div class="header"><h2>Документы отправлены</h2></div>
-                    <div class="content">
-                        <p>Уважаемый клиент!</p>
-                        <p>%s</p>
-                        <p>Номер заявки: <strong>%s</strong></p>
-                        <p><a href="http://deal:8081/api/v1/deal/document/%s/sign">Подписать документы</a></p>
-                        <p>С уважением,<br>Команда кредитного отдела</p>
-                    </div>
-                </div>
-                """, text, statementId, statementId);
-
-            case SEND_SES -> String.format("""
-                <div class="container">
-                    <div class="header"><h2>Код подтверждения</h2></div>
-                    <div class="content">
-                        <p>Уважаемый клиент!</p>
-                        <p>%s</p>
-                        <p>Номер заявки: <strong>%s</strong></p>
-                        <p><strong>Введите код: %s</strong></p>
-                        <p><a href="http://deal:8081/api/v1/deal/document/%s/code">Подтвердить</a></p>
-                        <p>С уважением,<br>Команда кредитного отдела</p>
-                    </div>
-                </div>
-                """, text, statementId, text, statementId);
-
-            case CREDIT_ISSUED -> String.format("""
-                <div class="container">
-                    <div class="header"><h2 style="background-color: #4CAF50;">Кредит одобрен!</h2></div>
-                    <div class="content">
-                        <p>Уважаемый клиент!</p>
-                        <p>Поздравляем! Ваша кредитная заявка <strong>№%s</strong> одобрена.</p>
-                        <p>%s</p>
-                        <p>Деньги будут перечислены в течение 24 часов на указанный вами счёт.</p>
-                        <p>С уважением,<br>Команда кредитного отдела</p>
-                    </div>
-                </div>
-                """, statementId, text);
-
-            case STATEMENT_DENIED -> String.format("""
-                <div class="container">
-                    <div class="header"><h2 style="background-color: #f44336;">Решение по заявке</h2></div>
-                    <div class="content">
-                        <p>Уважаемый клиент!</p>
-                        <p>%s</p>
-                        <p>Номер заявки: <strong>%s</strong></p>
-                        <p>Если у вас есть вопросы, пожалуйста, свяжитесь с нашим контакт-центром.</p>
-                        <p>С уважением,<br>Команда кредитного отдела</p>
-                    </div>
-                </div>
-                """, text, statementId);
-        };
-
-        return htmlHeader + body + htmlFooter;
     }
 }
