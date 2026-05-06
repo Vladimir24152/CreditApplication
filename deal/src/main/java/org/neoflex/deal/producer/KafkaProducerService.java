@@ -1,4 +1,4 @@
-package org.neoflex.deal.service;
+package org.neoflex.deal.producer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class KafkaProducerService {
 
-    private final KafkaTemplate<String,Object> kafkaTemplate;
+    private final KafkaTemplate<String, EmailMessage> kafkaTemplate;
     private final KafkaTopicsProperties kafkaTopicsProperties;
 
     public void send(EmailMessage message) {
@@ -25,7 +25,7 @@ public class KafkaProducerService {
             throw new IllegalArgumentException("Тема сообщения неизвестна: " + message.getTheme());
         }
 
-        log.info("Отправка сообщения в топик{}: {}", topic, message);
+        log.info("Отправка сообщения в топик {}: {}", topic, message);
         kafkaTemplate.send(topic, message);
     }
 }

@@ -14,6 +14,7 @@ import org.neoflex.deal.mapper.StatementMapper;
 import org.neoflex.deal.model.Client;
 import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.jsonb.StatusHistory;
+import org.neoflex.deal.producer.KafkaProducerService;
 import org.neoflex.deal.repository.ClientRepository;
 import org.neoflex.deal.repository.StatementRepository;
 import org.springframework.stereotype.Service;

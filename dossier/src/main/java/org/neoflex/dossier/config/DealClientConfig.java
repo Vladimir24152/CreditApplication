@@ -2,7 +2,7 @@ package org.neoflex.dossier.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportstarter.client.RestClientFactory;
+import org.neoflex.creditapplicationsupportartifact.client.RestClientFactory;
 import org.neoflex.dossier.client.DealClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;

@@ -1,4 +1,4 @@
-package org.neoflex.creditapplicationsupportstarter.interceptor;
+package org.neoflex.creditapplicationsupportartifact.interceptor;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;

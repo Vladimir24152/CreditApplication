@@ -17,6 +17,7 @@ import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.enums.ApplicationStatus;
 import org.neoflex.deal.model.enums.CreditStatus;
 import org.neoflex.deal.model.enums.Theme;
+import org.neoflex.deal.producer.KafkaProducerService;
 import org.neoflex.deal.repository.CreditRepository;
 import org.neoflex.deal.repository.StatementRepository;
 

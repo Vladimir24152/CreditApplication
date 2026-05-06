@@ -1,8 +1,8 @@
-package org.neoflex.creditapplicationsupportstarter.validation.annotation;
+package org.neoflex.creditapplicationsupportartifact.validation.annotation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import org.neoflex.creditapplicationsupportstarter.validation.validator.AdultValidator;
+import org.neoflex.creditapplicationsupportartifact.validation.validator.AdultValidator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

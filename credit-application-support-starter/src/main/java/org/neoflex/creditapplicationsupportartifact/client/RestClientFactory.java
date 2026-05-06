@@ -1,11 +1,11 @@
-package org.neoflex.creditapplicationsupportstarter.client;
+package org.neoflex.creditapplicationsupportartifact.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportstarter.exception.HttpErrorInternalServiceResponse;
-import org.neoflex.creditapplicationsupportstarter.exception.InternalServiceException;
-import org.neoflex.creditapplicationsupportstarter.interceptor.LoggingInternalInterceptor;
+import org.neoflex.creditapplicationsupportartifact.exception.HttpErrorInternalServiceResponse;
+import org.neoflex.creditapplicationsupportartifact.exception.InternalServiceException;
+import org.neoflex.creditapplicationsupportartifact.interceptor.LoggingInternalInterceptor;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.RestClient;
 

@@ -3,7 +3,6 @@ package org.neoflex.deal.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.model.Client;
 import org.neoflex.deal.model.Statement;
@@ -11,11 +10,11 @@ import org.neoflex.deal.model.enums.ApplicationStatus;
 import org.neoflex.deal.model.enums.ChangeType;
 import org.neoflex.deal.model.jsonb.Passport;
 import org.neoflex.deal.model.jsonb.StatusHistory;
+import org.neoflex.deal.producer.KafkaProducerService;
 import org.neoflex.deal.repository.ClientRepository;
 import org.neoflex.deal.repository.StatementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -37,7 +36,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 
 @SpringBootTest

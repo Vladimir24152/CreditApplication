@@ -1,4 +1,4 @@
-package org.neoflex.creditapplicationsupportstarter.exception;
+package org.neoflex.creditapplicationsupportartifact.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

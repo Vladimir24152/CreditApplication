@@ -26,6 +26,7 @@ import org.neoflex.deal.model.enums.Gender;
 import org.neoflex.deal.model.enums.MaritalStatus;
 import org.neoflex.deal.model.jsonb.Passport;
 import org.neoflex.deal.model.jsonb.StatusHistory;
+import org.neoflex.deal.producer.KafkaProducerService;
 import org.neoflex.deal.repository.CreditRepository;
 import org.neoflex.deal.repository.StatementRepository;
 

@@ -1,12 +1,12 @@
-package org.neoflex.dossier.service;
+package org.neoflex.dossier.listener;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.dossier.dto.EmailMessage;
+import org.neoflex.dossier.service.DocumentService;
+import org.neoflex.dossier.service.EmailService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -30,7 +30,7 @@ public class KafkaConsumerService {
 
     @KafkaListener(topics = "send-documents", groupId = "dossier-group")
     public void handleSendDocuments(EmailMessage message) {
-        log.info("Получено сообщение send-documents: statementId={}", message.getStatementId());
+        log.info("Получено сообщение по теме {}: statementId={}",message.getTheme(),message.getStatementId());
         documentService.createDocument(message);
     }
 

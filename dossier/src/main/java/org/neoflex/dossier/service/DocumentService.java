@@ -5,8 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.neoflex.dossier.client.DealClientService;
 import org.neoflex.dossier.dto.DealDocumentDto;
 import org.neoflex.dossier.dto.EmailMessage;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -19,19 +20,20 @@ public class DocumentService {
     private final DealClientService dealClientService;
     private final PdfGenerationService pdfGenerationService;
     private final EmailService emailService;
-    private final BuildEmailContentService buildEmailContentService;
+    private final EmailContentBuilder emailContentBuilder;
+    private final TemplateEngine templateEngine;
 
     public void createDocument(EmailMessage emailMessage) {
         UUID statementId = emailMessage.getStatementId();
         DealDocumentDto dto = dealClientService.getDealDocument(statementId);
 
-        Optional<byte[]> maybePdf = pdfGenerationService.generateCreditAgreement(dto);
-        if (maybePdf.isPresent()) {
+        Optional<byte[]> document = pdfGenerationService.generateCreditAgreement(dto);
+        if (document.isPresent()) {
             emailService.sendEmail(
                     dto.getEmail(),
                     "Кредитный договор №" + statementId,
-                    buildEmailContentService.buildEmailContent(emailMessage),
-                    maybePdf.get(),
+                    emailContentBuilder.buildEmailContent(emailMessage),
+                    document.get(),
                     "credit_agreement_" + statementId + ".pdf"
             );
             log.info("Документ и письмо отправлены клиенту {}", dto.getEmail());
@@ -47,11 +49,10 @@ public class DocumentService {
     }
 
     private String buildFallEmailHtml(DealDocumentDto data) {
-        return String.format("""
-                <h2>Уважаемый %s %s!</h2>
-                <p>Возникли технические сложности с составлением договора по заявке №%s.</p>
-                <p>Обратитесь в техническую поддержку.</p>
-                <p>С уважением,<br>Ваш банк</p>
-                """, data.getFirstName(), data.getLastName(), data.getStatementId());
+        Context context = new Context();
+        context.setVariable("firstName", data.getFirstName());
+        context.setVariable("lastName", data.getLastName());
+        context.setVariable("statementId", data.getStatementId().toString());
+        return templateEngine.process("email/fallback", context);
     }
 }

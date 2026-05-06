@@ -1,8 +1,7 @@
-package org.neoflex.creditapplicationsupportstarter.config;
+package org.neoflex.creditapplicationsupportartifact.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportstarter.interceptor.LoggingInterceptor;
-import org.neoflex.creditapplicationsupportstarter.interceptor.LoggingInternalInterceptor;
+import org.neoflex.creditapplicationsupportartifact.interceptor.LoggingInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;

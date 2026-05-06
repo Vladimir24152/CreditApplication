@@ -2,6 +2,7 @@ package org.neoflex.dossier.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,14 +20,14 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
-    private final BuildEmailContentService buildEmailContentService;
+    private final EmailContentBuilder emailContentBuilder;
 
     @Value("${spring.mail.username}")
     private String fromEmail;
 
-    public void sendEmail(EmailMessage message) {
-        String subject = getSubject(message.getTheme());
-        String content = buildEmailContentService.buildEmailContent(message);
+    public void sendEmail(@NonNull EmailMessage message) {
+        String subject = message.getTheme().getSubject();
+        String content = emailContentBuilder.buildEmailContent(message);
 
         sendEmail(message.getAddress(), subject, content);
     }
@@ -68,16 +69,5 @@ public class EmailService {
         } catch (MessagingException e) {
             log.error("Не удалось отправить электронное письмо по адресу: {},  ошибка: {}", to, e.getMessage(), e);
         }
-    }
-
-    private String getSubject(Theme theme) {
-        return switch (theme) {
-            case FINISH_REGISTRATION -> "Завершение регистрации - Кредитная заявка";
-            case CREATE_DOCUMENTS -> "Создание документов - Кредитная заявка";
-            case SEND_DOCUMENTS -> "Отправка документов - Кредитная заявка";
-            case SEND_SES -> "Подписание документов - Кредитная заявка";
-            case CREDIT_ISSUED -> "Кредит одобрен - Поздравляем!";
-            case STATEMENT_DENIED -> "Решение по кредитной заявке";
-        };
     }
 }
