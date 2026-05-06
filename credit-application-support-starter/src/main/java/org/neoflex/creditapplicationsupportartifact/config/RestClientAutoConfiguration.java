@@ -1,9 +1,9 @@
-package org.neoflex.creditapplicationsupportstarter.config;
+package org.neoflex.creditapplicationsupportartifact.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportstarter.client.RestClientFactory;
-import org.neoflex.creditapplicationsupportstarter.interceptor.LoggingInternalInterceptor;
+import org.neoflex.creditapplicationsupportartifact.client.RestClientFactory;
+import org.neoflex.creditapplicationsupportartifact.interceptor.LoggingInternalInterceptor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;

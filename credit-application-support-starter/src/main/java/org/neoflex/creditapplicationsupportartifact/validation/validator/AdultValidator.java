@@ -1,8 +1,8 @@
-package org.neoflex.creditapplicationsupportstarter.validation.validator;
+package org.neoflex.creditapplicationsupportartifact.validation.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.neoflex.creditapplicationsupportstarter.validation.annotation.Adult;
+import org.neoflex.creditapplicationsupportartifact.validation.annotation.Adult;
 
 import java.time.LocalDate;
 import java.time.Period;

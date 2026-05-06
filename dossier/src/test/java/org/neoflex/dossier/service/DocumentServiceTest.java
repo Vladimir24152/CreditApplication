@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -12,12 +11,10 @@ import org.neoflex.dossier.client.DealClientService;
 import org.neoflex.dossier.dto.DealDocumentDto;
 import org.neoflex.dossier.dto.EmailMessage;
 import org.neoflex.dossier.enums.Theme;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
-import jakarta.mail.internet.MimeMessage;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,7 +43,10 @@ class DocumentServiceTest {
     private EmailService emailService;
 
     @Mock
-    private BuildEmailContentService buildEmailContentService;
+    private EmailContentBuilder emailContentBuilder;
+
+    @Mock
+    private TemplateEngine templateEngine;
 
     @InjectMocks
     private DocumentService documentService;
@@ -85,14 +85,14 @@ class DocumentServiceTest {
 
         when(dealClientService.getDealDocument(statementId)).thenReturn(dealDocumentDto);
         when(pdfGenerationService.generateCreditAgreement(dealDocumentDto)).thenReturn(Optional.of(pdfBytes));
-        when(buildEmailContentService.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
+        when(emailContentBuilder.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
         doNothing().when(emailService).sendEmail(anyString(), anyString(), anyString(), any(), anyString());
 
         documentService.createDocument(emailMessage);
 
         verify(dealClientService).getDealDocument(statementId);
         verify(pdfGenerationService).generateCreditAgreement(dealDocumentDto);
-        verify(buildEmailContentService).buildEmailContent(emailMessage);
+        verify(emailContentBuilder).buildEmailContent(emailMessage);
         verify(emailService).sendEmail(
                 eq(dealDocumentDto.getEmail()),
                 eq("Кредитный договор №" + statementId),
@@ -105,6 +105,7 @@ class DocumentServiceTest {
     @Test
     @DisplayName("При ошибке генерации PDF отправляется письмо без вложения")
     void createDocumentShouldSendEmailWithoutAttachmentWhenPdfGenerationFails() {
+        when(templateEngine.process(anyString(), any(Context.class))).thenReturn("<html>Fallback</html>");
         when(dealClientService.getDealDocument(statementId)).thenReturn(dealDocumentDto);
         when(pdfGenerationService.generateCreditAgreement(dealDocumentDto)).thenReturn(Optional.empty());
         doNothing().when(emailService).sendEmail(anyString(), anyString(), anyString());

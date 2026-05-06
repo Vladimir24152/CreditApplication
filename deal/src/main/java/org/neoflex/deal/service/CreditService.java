@@ -16,6 +16,7 @@ import org.neoflex.deal.model.Credit;
 import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.enums.CreditStatus;
 import org.neoflex.deal.model.jsonb.StatusHistory;
+import org.neoflex.deal.producer.KafkaProducerService;
 import org.neoflex.deal.repository.CreditRepository;
 import org.neoflex.deal.repository.StatementRepository;
 import org.springframework.stereotype.Service;

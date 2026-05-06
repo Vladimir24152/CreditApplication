@@ -1,5 +1,6 @@
 package org.neoflex.dossier.service;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.dossier.dto.EmailMessage;
@@ -12,14 +13,14 @@ import org.thymeleaf.context.Context;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class BuildEmailContentService {
+public class EmailContentBuilder {
 
     private final TemplateEngine templateEngine;
 
     @Value("${external.deal.url:http://localhost:8081}")
     private String dealUrl;
 
-    public String buildEmailContent(EmailMessage message) {
+    public String buildEmailContent(@NonNull EmailMessage message) {
         Context context = new Context();
         context.setVariable("statementId", message.getStatementId());
         context.setVariable("text", message.getText());
@@ -29,18 +30,6 @@ public class BuildEmailContentService {
             context.setVariable("code", message.getText());
         }
 
-        String templateName = getTemplateName(message.getTheme());
-        return templateEngine.process("email/" + templateName, context);
-    }
-
-    private String getTemplateName(Theme theme) {
-        return switch (theme) {
-            case FINISH_REGISTRATION -> "finish-registration";
-            case CREATE_DOCUMENTS -> "create-documents";
-            case SEND_DOCUMENTS -> "send-documents";
-            case SEND_SES -> "send-ses";
-            case CREDIT_ISSUED -> "credit-issued";
-            case STATEMENT_DENIED -> "statement-denied";
-        };
+        return templateEngine.process(String.format("email/%s", message.getTheme().getTemplateName()), context);
     }
 }

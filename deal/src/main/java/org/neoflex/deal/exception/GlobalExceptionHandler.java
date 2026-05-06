@@ -1,9 +1,8 @@
 package org.neoflex.deal.exception;
 
 import jakarta.persistence.EntityNotFoundException;
-import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportstarter.exception.BaseGlobalExceptionHandler;
-import org.neoflex.creditapplicationsupportstarter.exception.HttpErrorInternalServiceResponse;
+import org.neoflex.creditapplicationsupportartifact.exception.BaseGlobalExceptionHandler;
+import org.neoflex.creditapplicationsupportartifact.exception.HttpErrorInternalServiceResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

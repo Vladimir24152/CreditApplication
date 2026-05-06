@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.neoflex.deal.config.KafkaTopicsProperties;
 import org.neoflex.deal.dto.EmailMessage;
 import org.neoflex.deal.model.enums.Theme;
+import org.neoflex.deal.producer.KafkaProducerService;
 import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.UUID;

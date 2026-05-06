@@ -10,7 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.neoflex.dossier.dto.EmailMessage;
 import org.neoflex.dossier.enums.Theme;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import jakarta.mail.internet.MimeMessage;
@@ -31,7 +30,7 @@ class EmailServiceTest {
     private JavaMailSender mailSender;
 
     @Mock
-    private BuildEmailContentService buildEmailContentService;
+    private EmailContentBuilder emailContentBuilder;
 
     @Mock
     private MimeMessage mimeMessage;
@@ -65,12 +64,12 @@ class EmailServiceTest {
     @Test
     @DisplayName("Успешная отправка email без вложения")
     void sendEmailShouldSendSimpleEmailSuccessfully() throws Exception {
-        when(buildEmailContentService.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
+        when(emailContentBuilder.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
         doNothing().when(mailSender).send(any(MimeMessage.class));
 
         emailService.sendEmail(emailMessage);
 
-        verify(buildEmailContentService).buildEmailContent(emailMessage);
+        verify(emailContentBuilder).buildEmailContent(emailMessage);
         verify(mailSender).createMimeMessage();
         verify(mailSender).send(any(MimeMessage.class));
     }
@@ -117,12 +116,12 @@ class EmailServiceTest {
                 .text("Finish registration")
                 .build();
 
-        when(buildEmailContentService.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
+        when(emailContentBuilder.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
         doNothing().when(mailSender).send(any(MimeMessage.class));
 
         emailService.sendEmail(emailMessage);
 
-        verify(buildEmailContentService).buildEmailContent(emailMessage);
+        verify(emailContentBuilder).buildEmailContent(emailMessage);
         verify(mailSender).send(any(MimeMessage.class));
     }
 
@@ -136,12 +135,12 @@ class EmailServiceTest {
                 .text("Credit issued")
                 .build();
 
-        when(buildEmailContentService.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
+        when(emailContentBuilder.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
         doNothing().when(mailSender).send(any(MimeMessage.class));
 
         emailService.sendEmail(emailMessage);
 
-        verify(buildEmailContentService).buildEmailContent(emailMessage);
+        verify(emailContentBuilder).buildEmailContent(emailMessage);
         verify(mailSender).send(any(MimeMessage.class));
     }
 
@@ -155,12 +154,12 @@ class EmailServiceTest {
                 .text("Create documents")
                 .build();
 
-        when(buildEmailContentService.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
+        when(emailContentBuilder.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
         doNothing().when(mailSender).send(any(MimeMessage.class));
 
         emailService.sendEmail(emailMessage);
 
-        verify(buildEmailContentService).buildEmailContent(emailMessage);
+        verify(emailContentBuilder).buildEmailContent(emailMessage);
         verify(mailSender).send(any(MimeMessage.class));
     }
 
@@ -174,12 +173,12 @@ class EmailServiceTest {
                 .text("Send documents")
                 .build();
 
-        when(buildEmailContentService.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
+        when(emailContentBuilder.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
         doNothing().when(mailSender).send(any(MimeMessage.class));
 
         emailService.sendEmail(emailMessage);
 
-        verify(buildEmailContentService).buildEmailContent(emailMessage);
+        verify(emailContentBuilder).buildEmailContent(emailMessage);
         verify(mailSender).send(any(MimeMessage.class));
     }
 
@@ -193,12 +192,12 @@ class EmailServiceTest {
                 .text("123456")
                 .build();
 
-        when(buildEmailContentService.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
+        when(emailContentBuilder.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
         doNothing().when(mailSender).send(any(MimeMessage.class));
 
         emailService.sendEmail(emailMessage);
 
-        verify(buildEmailContentService).buildEmailContent(emailMessage);
+        verify(emailContentBuilder).buildEmailContent(emailMessage);
         verify(mailSender).send(any(MimeMessage.class));
     }
 
@@ -212,12 +211,12 @@ class EmailServiceTest {
                 .text("Statement denied")
                 .build();
 
-        when(buildEmailContentService.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
+        when(emailContentBuilder.buildEmailContent(emailMessage)).thenReturn(expectedHtml);
         doNothing().when(mailSender).send(any(MimeMessage.class));
 
         emailService.sendEmail(emailMessage);
 
-        verify(buildEmailContentService).buildEmailContent(emailMessage);
+        verify(emailContentBuilder).buildEmailContent(emailMessage);
         verify(mailSender).send(any(MimeMessage.class));
     }
 }

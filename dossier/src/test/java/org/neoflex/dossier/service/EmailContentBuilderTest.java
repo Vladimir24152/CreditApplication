@@ -4,20 +4,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.neoflex.dossier.dto.EmailMessage;
-import org.neoflex.dossier.dto.DealDocumentDto;
 import org.neoflex.dossier.enums.Theme;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
 
-import jakarta.mail.internet.MimeMessage;
-import java.io.ByteArrayOutputStream;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,19 +19,18 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @DisplayName("Тесты сервиса BuildEmailContentService")
 @ExtendWith(MockitoExtension.class)
-class BuildEmailContentServiceTest {
+class EmailContentBuilderTest {
 
     @Mock
     private TemplateEngine templateEngine;
 
     @InjectMocks
-    private BuildEmailContentService buildEmailContentService;
+    private EmailContentBuilder emailContentBuilder;
 
     private EmailMessage emailMessage;
     private UUID statementId;
@@ -49,10 +41,10 @@ class BuildEmailContentServiceTest {
         statementId = UUID.randomUUID();
         dealUrl = "http://localhost:8081";
 
-        buildEmailContentService = new BuildEmailContentService(templateEngine);
-        java.lang.reflect.Field field = org.springframework.util.ReflectionUtils.findField(BuildEmailContentService.class, "dealUrl");
+        emailContentBuilder = new EmailContentBuilder(templateEngine);
+        java.lang.reflect.Field field = org.springframework.util.ReflectionUtils.findField(EmailContentBuilder.class, "dealUrl");
         field.setAccessible(true);
-        org.springframework.util.ReflectionUtils.setField(field, buildEmailContentService, dealUrl);
+        org.springframework.util.ReflectionUtils.setField(field, emailContentBuilder, dealUrl);
 
         emailMessage = EmailMessage.builder()
                 .address("test@example.com")
@@ -68,7 +60,7 @@ class BuildEmailContentServiceTest {
         String expectedHtml = "<html>Test content</html>";
         when(templateEngine.process(eq("email/create-documents"), any())).thenReturn(expectedHtml);
 
-        String result = buildEmailContentService.buildEmailContent(emailMessage);
+        String result = emailContentBuilder.buildEmailContent(emailMessage);
 
         assertEquals(expectedHtml, result);
         verify(templateEngine).process(eq("email/create-documents"), any());
@@ -87,7 +79,7 @@ class BuildEmailContentServiceTest {
         String expectedHtml = "<html>Finish content</html>";
         when(templateEngine.process(eq("email/finish-registration"), any())).thenReturn(expectedHtml);
 
-        String result = buildEmailContentService.buildEmailContent(emailMessage);
+        String result = emailContentBuilder.buildEmailContent(emailMessage);
 
         assertEquals(expectedHtml, result);
         verify(templateEngine).process(eq("email/finish-registration"), any());
@@ -106,7 +98,7 @@ class BuildEmailContentServiceTest {
         String expectedHtml = "<html>Send documents content</html>";
         when(templateEngine.process(eq("email/send-documents"), any())).thenReturn(expectedHtml);
 
-        String result = buildEmailContentService.buildEmailContent(emailMessage);
+        String result = emailContentBuilder.buildEmailContent(emailMessage);
 
         assertEquals(expectedHtml, result);
         verify(templateEngine).process(eq("email/send-documents"), any());
@@ -126,7 +118,7 @@ class BuildEmailContentServiceTest {
         String expectedHtml = "<html>SES code: 123456</html>";
         when(templateEngine.process(eq("email/send-ses"), any())).thenReturn(expectedHtml);
 
-        String result = buildEmailContentService.buildEmailContent(emailMessage);
+        String result = emailContentBuilder.buildEmailContent(emailMessage);
 
         assertEquals(expectedHtml, result);
         verify(templateEngine).process(eq("email/send-ses"), any());
@@ -145,7 +137,7 @@ class BuildEmailContentServiceTest {
         String expectedHtml = "<html>Credit issued content</html>";
         when(templateEngine.process(eq("email/credit-issued"), any())).thenReturn(expectedHtml);
 
-        String result = buildEmailContentService.buildEmailContent(emailMessage);
+        String result = emailContentBuilder.buildEmailContent(emailMessage);
 
         assertEquals(expectedHtml, result);
         verify(templateEngine).process(eq("email/credit-issued"), any());
@@ -164,7 +156,7 @@ class BuildEmailContentServiceTest {
         String expectedHtml = "<html>Statement denied content</html>";
         when(templateEngine.process(eq("email/statement-denied"), any())).thenReturn(expectedHtml);
 
-        String result = buildEmailContentService.buildEmailContent(emailMessage);
+        String result = emailContentBuilder.buildEmailContent(emailMessage);
 
         assertEquals(expectedHtml, result);
         verify(templateEngine).process(eq("email/statement-denied"), any());

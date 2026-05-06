@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h2 th:text="|Уважаемый ${firstName} ${lastName}!|"></h2>
+<p>Возникли технические сложности с составлением договора по заявке №<span th:text="${statementId}"></span>.</p>
+<p>Обратитесь в техническую поддержку.</p>
+<p>С уважением,<br>Ваш банк</p>
+</body>
+</html>

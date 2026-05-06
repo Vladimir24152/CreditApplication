@@ -1,7 +1,8 @@
-package org.neoflex.creditapplicationsupportstarter.exception;
+package org.neoflex.creditapplicationsupportartifact.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
+@ConditionalOnMissingBean(BaseGlobalExceptionHandler.class)
 public class BaseGlobalExceptionHandler {
 
     @ExceptionHandler(NoResourceFoundException.class)

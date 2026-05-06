@@ -53,50 +53,56 @@
 </head>
 <body>
 
-<h1>КРЕДИТНЫЙ ДОГОВОР № <span th:text="${statementId}"></span></h1>
+<h1>КРЕДИТНЫЙ ДОГОВОР № <span th:text="${agreement.statementId}"></span></h1>
 <div class="header-info">
-    г. Москва, <span th:text="${#temporals.format(signDate, 'dd.MM.yyyy')}"></span>
+    г. Москва, <span th:text="${#temporals.format(agreement.signDate, 'dd.MM.yyyy')}"></span>
 </div>
 
 <div class="section-title">1. СТОРОНЫ ДОГОВОРА</div>
 <p>
-    <strong>Заёмщик:</strong> <span th:text="${lastName}"></span> <span th:text="${firstName}"></span> <span th:text="${middleName} ?: ''"></span>,
-    <span th:text="${#temporals.format(birthDate, 'dd.MM.yyyy')}"></span> г.р.<br/>
-    <strong>Паспорт:</strong> <span th:text="${passportSeries}"></span> <span th:text="${passportNumber}"></span>, выдан <span th:text="${#temporals.format(passportIssueDate, 'dd.MM.yyyy')}"></span>,
-    код подразделения <span th:text="${passportIssueBranch}"></span><br/>
-    <strong>Email:</strong> <span th:text="${email}"></span><br/>
-    <strong>Счёт:</strong> <span th:text="${accountNumber}"></span>
+    <strong>Заёмщик:</strong>
+    <span th:text="${agreement.lastName}"></span>
+    <span th:text="${agreement.firstName}"></span>
+    <span th:text="${agreement.middleName} ?: ''"></span>,
+    <span th:text="${#temporals.format(agreement.birthDate, 'dd.MM.yyyy')}"></span> г.р.<br/>
+    <strong>Паспорт:</strong>
+    <span th:text="${agreement.passportSeries}"></span>
+    <span th:text="${agreement.passportNumber}"></span>,
+    выдан <span th:text="${#temporals.format(agreement.passportIssueDate, 'dd.MM.yyyy')}"></span>,
+    код подразделения <span th:text="${agreement.passportIssueBranch}"></span><br/>
+    <strong>Email:</strong> <span th:text="${agreement.email}"></span><br/>
+    <strong>Счёт:</strong> <span th:text="${agreement.accountNumber}"></span>
 </p>
 
 <div class="section-title">2. УСЛОВИЯ КРЕДИТА</div>
 <table class="content-table">
     <tr>
         <td style="width: 50%;">Сумма кредита</td>
-        <td><span th:text="${#numbers.formatDecimal(amount, 0, 2)}"></span> руб.</td>
+        <td><span th:text="${#numbers.formatDecimal(agreement.amount, 0, 2)}"></span> руб.</td>
     </tr>
     <tr>
         <td>Срок кредита</td>
-        <td><span th:text="${term}"></span> месяцев</td>
+        <td><span th:text="${agreement.term}"></span> месяцев</td>
     </tr>
     <tr>
         <td>Процентная ставка</td>
-        <td><span th:text="${#numbers.formatDecimal(rate, 0, 2)}"></span> % годовых</td>
+        <td><span th:text="${#numbers.formatDecimal(agreement.rate, 0, 2)}"></span> % годовых</td>
     </tr>
     <tr>
         <td>Ежемесячный платёж</td>
-        <td><span th:text="${#numbers.formatDecimal(monthlyPayment, 0, 2)}"></span> руб.</td>
+        <td><span th:text="${#numbers.formatDecimal(agreement.monthlyPayment, 0, 2)}"></span> руб.</td>
     </tr>
     <tr>
         <td>Полная стоимость кредита (ПСК)</td>
-        <td><span th:text="${#numbers.formatDecimal(psk, 0, 2)}"></span> руб.</td>
+        <td><span th:text="${#numbers.formatDecimal(agreement.psk, 0, 2)}"></span> руб.</td>
     </tr>
     <tr>
         <td>Страховка</td>
-        <td><span th:if="${isInsuranceEnabled}">Включена</span><span th:unless="${isInsuranceEnabled}">Не включена</span></td>
+        <td><span th:if="${agreement.isInsuranceEnabled}">Включена</span><span th:unless="${agreement.isInsuranceEnabled}">Не включена</span></td>
     </tr>
     <tr>
         <td>Зарплатный клиент</td>
-        <td><span th:if="${isSalaryClient}">Да</span><span th:unless="${isSalaryClient}">Нет</span></td>
+        <td><span th:if="${agreement.isSalaryClient}">Да</span><span th:unless="${agreement.isSalaryClient}">Нет</span></td>
     </tr>
 </table>
 
@@ -112,7 +118,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr th:each="p : ${paymentSchedule}">
+    <tr th:each="p : ${agreement.paymentSchedule}">
         <td th:text="${p.number}"></td>
         <td th:text="${#temporals.format(p.date, 'dd.MM.yyyy')}"></td>
         <td th:text="${#numbers.formatDecimal(p.principalPayment, 0, 2)}"></td>
@@ -124,7 +130,7 @@
 
 <div class="footer">
     Данный документ сформирован автоматически и не требует подписи в бумажном виде.<br/>
-    © 2025 Кредитная система
+    © 2026 Кредитная система
 </div>
 
 </body>
