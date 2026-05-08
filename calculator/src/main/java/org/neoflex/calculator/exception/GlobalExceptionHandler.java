@@ -1,8 +1,8 @@
 package org.neoflex.calculator.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportartifact.exception.BaseGlobalExceptionHandler;
-import org.neoflex.creditapplicationsupportartifact.exception.HttpErrorInternalServiceResponse;
+import org.neoflex.credit.lib.exception.BaseGlobalExceptionHandler;
+import org.neoflex.credit.lib.exception.HttpErrorInternalServiceResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

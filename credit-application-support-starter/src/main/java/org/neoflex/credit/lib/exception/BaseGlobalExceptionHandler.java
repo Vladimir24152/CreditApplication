@@ -1,4 +1,4 @@
-package org.neoflex.creditapplicationsupportartifact.exception;
+package org.neoflex.credit.lib.exception;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;

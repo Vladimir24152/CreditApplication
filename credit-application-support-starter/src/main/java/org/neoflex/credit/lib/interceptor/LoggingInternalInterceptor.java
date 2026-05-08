@@ -1,4 +1,4 @@
-package org.neoflex.creditapplicationsupportartifact.interceptor;
+package org.neoflex.credit.lib.interceptor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpRequest;
