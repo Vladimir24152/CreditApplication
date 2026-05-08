@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.neoflex.creditapplicationsupportartifact.exception.HttpErrorInternalServiceResponse;
+import org.neoflex.credit.lib.exception.HttpErrorInternalServiceResponse;
 import org.neoflex.deal.service.DocumentService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;

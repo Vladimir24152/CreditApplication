@@ -1,4 +1,4 @@
-package org.neoflex.creditapplicationsupportartifact.interceptor;
+package org.neoflex.credit.lib.interceptor;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

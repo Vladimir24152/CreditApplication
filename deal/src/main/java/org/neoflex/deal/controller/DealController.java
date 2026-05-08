@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.neoflex.creditapplicationsupportartifact.exception.HttpErrorInternalServiceResponse;
+import org.neoflex.credit.lib.exception.HttpErrorInternalServiceResponse;
 import org.neoflex.deal.dto.DealDocumentDto;
 import org.neoflex.deal.dto.FinishRegistrationRequestDto;
 import org.neoflex.deal.dto.LoanOfferDto;
