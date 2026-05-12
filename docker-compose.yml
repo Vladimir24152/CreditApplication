@@ -143,6 +143,25 @@ services:
     networks:
       - credit-network
 
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      deal:
+        condition: service_started
+      statement:
+        condition: service_started
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVER_PORT=8084
+    networks:
+      - credit-network
+    restart: unless-stopped
+
 networks:
   credit-network:
     driver: bridge

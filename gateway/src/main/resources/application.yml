@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      routes:
+        - id: deal-route
+          uri: http://deal-service:8081
+          predicates:
+            - Path=/api/v1/deal/**
+          filters:
+            - StripPrefix=0
+
+        - id: statement-route
+          uri: http://statement-service:8082
+          predicates:
+            - Path=/api/v1/statement/**
+          filters:
+            - StripPrefix=0
+
+        - id: openapi-deal
+          uri: http://deal-service:8081
+          predicates:
+            - Path=/deal/v3/api-docs
+          filters:
+            - RewritePath=/deal/v3/api-docs, /api-docs
+
+        - id: openapi-statement
+          uri: http://statement-service:8082
+          predicates:
+            - Path=/statement/v3/api-docs
+          filters:
+            - RewritePath=/statement/v3/api-docs, /api-docs
+
+server:
+  port: 8084
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    configUrl: /v3/api-docs/swagger-config
+    urls:
+      - name: Deal Service
+        url: /deal/v3/api-docs
+      - name: Statement Service
+        url: /statement/v3/api-docs
