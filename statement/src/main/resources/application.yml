@@ -10,6 +10,8 @@ server:
 springdoc:
   api-docs:
     path: /api-docs
+  servers:
+    - url: /api/v1/statement
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
@@ -24,6 +26,10 @@ client:
         path: /statement
       select:
         path: /offer/select
+
+gateway:
+  service:
+    url: http://localhost:8084
 
 credit:
   support:

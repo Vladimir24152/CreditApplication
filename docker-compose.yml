@@ -49,6 +49,8 @@ services:
       - CALCULATOR_SERVICE_URL=http://calculator:8080
       - LIQUIBASE_ENABLED=true
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRINGDOC_USE-FORWARD-HEADERS=false
+      - SPRINGDOC_API-DOCS_SERVERS[0]_URL=/
     networks:
       - credit-network
 
@@ -65,6 +67,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - DEAL_SERVICE_ADDRESS=http://deal:8081
+      - SPRINGDOC_USE-FORWARD-HEADERS=false
+      - SPRINGDOC_API-DOCS_SERVERS[0]_URL=/
     networks:
       - credit-network
 
@@ -142,6 +146,25 @@ services:
       echo 'Topics created successfully!';
     networks:
       - credit-network
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      deal:
+        condition: service_started
+      statement:
+        condition: service_started
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVER_PORT=8084
+    networks:
+      - credit-network
+    restart: unless-stopped
 
 networks:
   credit-network:
