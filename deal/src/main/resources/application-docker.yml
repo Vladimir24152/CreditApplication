@@ -23,6 +23,12 @@ spring:
     default-schema: public
     drop-first: false
 
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 springdoc:
   api-docs:
     path: /api-docs
@@ -46,3 +52,12 @@ calculator:
     base: "${CALCULATOR_ENDPOINTS_BASE:/api/v1/calculator}"
     offers: "${CALCULATOR_ENDPOINTS_OFFERS:/offers}"
     calc: "${CALCULATOR_ENDPOINTS_CALC:/calc}"
+
+kafka:
+  topics:
+    finish-registration: finish-registration
+    create-documents: create-documents
+    send-documents: send-documents
+    send-ses: send-ses
+    credit-issued: credit-issued
+    statement-denied: statement-denied

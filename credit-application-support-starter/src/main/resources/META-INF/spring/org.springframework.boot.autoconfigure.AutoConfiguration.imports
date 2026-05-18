@@ -1,0 +1,2 @@
+org.neoflex.credit.lib.config.LoggingAutoConfiguration
+org.neoflex.credit.lib.config.RestClientAutoConfiguration

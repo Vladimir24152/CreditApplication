@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.neoflex.calculator.enums.Gender;
 import org.neoflex.calculator.enums.MaritalStatus;
-import org.neoflex.calculator.validation.annotation.Adult;
 import org.neoflex.calculator.validation.annotation.AgeRange;
 import org.neoflex.calculator.validation.annotation.RatioOfTheAmountAndSalary;
 
@@ -57,7 +56,6 @@ public class ScoringDataDto {
     @Schema(description = "Пол", example = "MALE")
     private Gender gender;
 
-    @Adult(message = "Клиент должен быть совершеннолетним")
     @AgeRange(minAge = 20,maxAge = 65, message = "Отказ в займе для клиентов младше 20 и старше 65 лет")
     @NotNull(message = "Дата рождения обязательна")
     @Past(message = "Дата рождения должна быть в прошлом")

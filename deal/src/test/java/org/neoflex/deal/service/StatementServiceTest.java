@@ -17,6 +17,7 @@ import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.enums.ApplicationStatus;
 import org.neoflex.deal.model.enums.ChangeType;
 import org.neoflex.deal.model.jsonb.StatusHistory;
+import org.neoflex.deal.producer.KafkaProducerService;
 import org.neoflex.deal.repository.ClientRepository;
 import org.neoflex.deal.repository.StatementRepository;
 
@@ -35,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -52,6 +54,9 @@ class StatementServiceTest {
 
     @Mock
     private CalculatorClientService calculatorClientService;
+
+    @Mock
+    private KafkaProducerService kafkaProducerService;
 
     @Mock
     private ClientMapper clientMapper;
@@ -175,6 +180,7 @@ class StatementServiceTest {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         statementService.selectOffer(loanOfferRequest);
 
@@ -218,6 +224,7 @@ class StatementServiceTest {
     void whenStatusChangesThenHistoryPreservesOrder() {
         testStatement.setStatusHistory(new ArrayList<>());
         testStatement.setStatus(ApplicationStatus.PREAPPROVAL);
+        doNothing().when(kafkaProducerService).send(any());
 
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
@@ -273,6 +280,7 @@ class StatementServiceTest {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         statementService.selectOffer(loanOfferRequest);
 
@@ -286,6 +294,7 @@ class StatementServiceTest {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         statementService.selectOffer(loanOfferRequest);
 
@@ -300,6 +309,7 @@ class StatementServiceTest {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         statementService.selectOffer(loanOfferRequest);
 

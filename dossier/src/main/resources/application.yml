@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: dossier-service
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    protocol: smtp
+    default-encoding: UTF-8
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+    check-template-location: true
+    encoding: UTF-8
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+
+server:
+  port: 8083
+
+deal:
+  service:
+    url: http://deal:8081
+  endpoints:
+    base: /api/v1/deal
+
+external:
+  deal:
+    url: http://localhost:8081
+
+logging:
+  org.neoflex: DEBUG
+  org.neoflex.service: DEBUG
+  org.neoflex.dto: DEBUG
+  org.springframework.kafka: OFF
+  org.apache.kafka: OFF
+  kafka: OFF
+  org.apache.kafka.clients: OFF
+  org.springframework.kafka.listener: OFF
+
+credit:
+  support:
+    logging:
+      enabled: true
