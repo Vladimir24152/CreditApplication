@@ -3,6 +3,7 @@ package org.neoflex.deal.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.neoflex.deal.dto.DealDocumentDto;
+import org.neoflex.deal.dto.StatementResponseDto;
 import org.neoflex.deal.model.Statement;
 
 import java.time.LocalDate;
@@ -33,4 +34,8 @@ public interface StatementMapper {
     @Mapping(target = "isSalaryClient", source = "statement.appliedOffer.isSalaryClient")
     @Mapping(target = "paymentSchedule", source = "statement.credit.paymentSchedule")
     DealDocumentDto toDealDocumentDto(Statement statement, LocalDate signDate);
+
+    @Mapping(target = "client", source = "statement.client")
+    @Mapping(target = "credit", source = "statement.credit")
+    StatementResponseDto toStatementResponseDto(Statement statement);
 }

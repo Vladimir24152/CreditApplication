@@ -32,6 +32,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.neoflex.deal.model.enums.ApplicationStatus.APPROVED;
+import static org.neoflex.deal.model.enums.ApplicationStatus.DOCUMENT_CREATED;
+import static org.neoflex.deal.model.enums.ApplicationStatus.DOCUMENT_SIGNED;
+import static org.neoflex.deal.model.enums.ApplicationStatus.PREPARE_DOCUMENTS;
 
 @DisplayName("Тесты сервиса DocumentService")
 @ExtendWith(MockitoExtension.class)
@@ -77,7 +81,7 @@ class DocumentServiceTest {
                 .statementId(statementId)
                 .client(client)
                 .credit(credit)
-                .status(ApplicationStatus.DOCUMENT_SIGNED)
+                .status(DOCUMENT_SIGNED)
                 .sesCode(sesCode)
                 .build();
     }
@@ -119,6 +123,7 @@ class DocumentServiceTest {
     void signDocumentsShouldGenerateSesCodeAndSendKafkaMessage() {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(statement));
 
+        statement.setStatus(PREPARE_DOCUMENTS);
         documentService.signDocuments(statementId);
 
         ArgumentCaptor<Statement> statementCaptor = ArgumentCaptor.forClass(Statement.class);
@@ -158,6 +163,7 @@ class DocumentServiceTest {
     void verifyCodeShouldVerifySuccessfullyAndIssueCredit() {
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(statement));
 
+        statement.setStatus(DOCUMENT_CREATED);
         documentService.verifyCode(statementId, sesCode);
 
         assertEquals(CreditStatus.ISSUED, statement.getCredit().getCreditStatus());
@@ -194,6 +200,10 @@ class DocumentServiceTest {
     @DisplayName("При неверном коде верификации выбрасывается CodeVerificationException")
     void verifyCodeShouldThrowExceptionWhenCodeIsInvalid() {
         String invalidCode = "000000";
+
+        statement.setStatus(DOCUMENT_CREATED);
+        statement.setSesCode("123456");
+
         when(statementRepository.findById(statementId)).thenReturn(Optional.of(statement));
 
         CodeVerificationException exception = assertThrows(CodeVerificationException.class,
@@ -201,8 +211,38 @@ class DocumentServiceTest {
 
         assertTrue(exception.getMessage().contains(statementId.toString()));
         assertEquals(CreditStatus.CALCULATED, statement.getCredit().getCreditStatus());
-        assertEquals(ApplicationStatus.DOCUMENT_SIGNED, statement.getStatus());
+        assertEquals(DOCUMENT_CREATED, statement.getStatus());  // Статус не должен измениться
 
+        verify(creditRepository, never()).save(any());
+        verify(statementRepository, never()).save(any());
+        verify(kafkaProducerService, never()).send(any());
+    }
+
+    @Test
+    @DisplayName("При статусе не PREPARE_DOCUMENTS заявки при верификации выбрасывается IllegalStateException")
+    void verifyCodeShouldThrowExceptionWhenStatusIsNotPREPARE_DOCUMENTS() {
+        when(statementRepository.findById(statementId)).thenReturn(Optional.of(statement));
+
+        statement.setStatus(APPROVED);
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> documentService.verifyCode(statementId, sesCode));
+
+        assertTrue(exception.getMessage().contains("Некорректный статус заявки"));
+        verify(creditRepository, never()).save(any());
+        verify(statementRepository, never()).save(any());
+        verify(kafkaProducerService, never()).send(any());
+    }
+
+    @Test
+    @DisplayName("При статусе не DOCUMENT_CREATED заявки при верификации выбрасывается IllegalStateException")
+    void verifyCodeShouldThrowExceptionWhenStatusIsNotDOCUMENT_CREATED() {
+        when(statementRepository.findById(statementId)).thenReturn(Optional.of(statement));
+
+        statement.setStatus(APPROVED);
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> documentService.verifyCode(statementId, sesCode));
+
+        assertTrue(exception.getMessage().contains("Некорректный статус заявки"));
         verify(creditRepository, never()).save(any());
         verify(statementRepository, never()).save(any());
         verify(kafkaProducerService, never()).send(any());

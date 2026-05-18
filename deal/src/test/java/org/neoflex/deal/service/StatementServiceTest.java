@@ -11,7 +11,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.neoflex.deal.client.calculator.CalculatorClientService;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
+import org.neoflex.deal.dto.StatementResponseDto;
 import org.neoflex.deal.mapper.ClientMapper;
+import org.neoflex.deal.mapper.StatementMapper;
 import org.neoflex.deal.model.Client;
 import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.enums.ApplicationStatus;
@@ -60,6 +62,9 @@ class StatementServiceTest {
 
     @Mock
     private ClientMapper clientMapper;
+
+    @Mock
+    private StatementMapper statementMapper;
 
     @InjectMocks
     private StatementService statementService;
@@ -334,5 +339,32 @@ class StatementServiceTest {
         verify(clientRepository).save(any());
         verify(statementRepository).save(any());
         verify(calculatorClientService).calculateLoanOffers(loanStatementRequest);
+    }
+
+    @Test
+    @DisplayName("При получении несуществующей заявки выбрасывается EntityNotFoundException")
+    void whenGetStatementByIdNotFoundThenThrowEntityNotFoundException() {
+        UUID nonExistentId = UUID.randomUUID();
+
+        when(statementRepository.findFullStatementById(nonExistentId))
+                .thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> statementService.get(nonExistentId));
+
+        assertTrue(exception.getMessage().contains(nonExistentId.toString()));
+        verify(statementRepository).findFullStatementById(nonExistentId);
+    }
+
+    @Test
+    @DisplayName("Получение всех заявок при пустом списке возвращает пустой список")
+    void whenGetAllStatementsReturnsEmptyList() {
+        when(statementRepository.findAllFullStatementById()).thenReturn(new ArrayList<>());
+
+        List<StatementResponseDto> result = statementService.getAll();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(statementRepository).findAllFullStatementById();
     }
 }

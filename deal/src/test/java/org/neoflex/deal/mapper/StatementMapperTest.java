@@ -7,6 +7,7 @@ import org.mapstruct.factory.Mappers;
 import org.neoflex.deal.dto.DealDocumentDto;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.PaymentScheduleElementDto;
+import org.neoflex.deal.dto.StatementResponseDto;
 import org.neoflex.deal.model.Client;
 import org.neoflex.deal.model.Credit;
 import org.neoflex.deal.model.Statement;
@@ -176,5 +177,97 @@ class StatementMapperTest {
         assertThat(result.getLastName()).isNull();
         assertThat(result.getPassportSeries()).isNull();
         assertThat(result.getAmount()).isNull();
+    }
+
+    @Test
+    @DisplayName("Маппинг Statement в StatementResponseDto должен корректно преобразовывать все поля")
+    void toStatementResponseDtoShouldMapAllFieldsCorrectly() {
+        StatementResponseDto result = statementMapper.toStatementResponseDto(statement);
+
+        assertNotNull(result);
+        assertEquals(statement.getStatementId(), result.getStatementId());
+        assertEquals(statement.getStatus(), result.getStatus());
+        assertEquals(statement.getCreationDate(), result.getCreationDate());
+        assertEquals(statement.getAppliedOffer(), result.getAppliedOffer());
+        assertEquals(statement.getSignDate(), result.getSignDate());
+        assertEquals(statement.getStatusHistory(), result.getStatusHistory());
+    }
+
+    @Test
+    @DisplayName("Маппинг Statement в StatementResponseDto должен корректно маппить клиента")
+    void toStatementResponseDtoShouldMapClientCorrectly() {
+        StatementResponseDto result = statementMapper.toStatementResponseDto(statement);
+
+        assertNotNull(result.getClient());
+        assertEquals(statement.getClient().getFirstName(), result.getClient().getFirstName());
+        assertEquals(statement.getClient().getLastName(), result.getClient().getLastName());
+        assertEquals(statement.getClient().getMiddleName(), result.getClient().getMiddleName());
+        assertEquals(statement.getClient().getBirthDate(), result.getClient().getBirthDate());
+        assertEquals(statement.getClient().getEmail(), result.getClient().getEmail());
+        assertEquals(statement.getClient().getGender(), result.getClient().getGender());
+        assertEquals(statement.getClient().getMaritalStatus(), result.getClient().getMaritalStatus());
+        assertEquals(statement.getClient().getDependentAmount(), result.getClient().getDependentAmount());
+        assertEquals(statement.getClient().getAccountNumber(), result.getClient().getAccountNumber());
+
+        assertThat(result.getClient().getPassport())
+                .usingRecursiveComparison()
+                .isEqualTo(statement.getClient().getPassport());
+    }
+
+    @Test
+    @DisplayName("Маппинг Statement в StatementResponseDto должен корректно маппить кредит")
+    void toStatementResponseDtoShouldMapCreditCorrectly() {
+        StatementResponseDto result = statementMapper.toStatementResponseDto(statement);
+
+        assertNotNull(result.getCredit());
+        assertEquals(statement.getCredit().getAmount(), result.getCredit().getAmount());
+        assertEquals(statement.getCredit().getTerm(), result.getCredit().getTerm());
+        assertEquals(statement.getCredit().getMonthlyPayment(), result.getCredit().getMonthlyPayment());
+        assertEquals(statement.getCredit().getRate(), result.getCredit().getRate());
+        assertEquals(statement.getCredit().getPsk(), result.getCredit().getPsk());
+        assertEquals(statement.getCredit().getIsInsuranceEnabled(), result.getCredit().getIsInsuranceEnabled());
+        assertEquals(statement.getCredit().getIsSalaryClient(), result.getCredit().getIsSalaryClient());
+
+        assertThat(result.getCredit().getPaymentSchedule())
+                .usingRecursiveComparison()
+                .isEqualTo(statement.getCredit().getPaymentSchedule());
+    }
+
+    @Test
+    @DisplayName("Маппинг Statement с null кредитом должен корректно обрабатывать null")
+    void toStatementResponseDtoShouldHandleNullCredit() {
+        Statement statementWithoutCredit = Statement.builder()
+                .statementId(statement.getStatementId())
+                .client(statement.getClient())
+                .status(ApplicationStatus.PREAPPROVAL)
+                .creationDate(LocalDateTime.now())
+                .statusHistory(statement.getStatusHistory())
+                .build();
+
+        StatementResponseDto result = statementMapper.toStatementResponseDto(statementWithoutCredit);
+
+        assertNotNull(result);
+        assertNotNull(result.getClient());
+        assertThat(result.getCredit()).isNull();
+    }
+
+    @Test
+    @DisplayName("Маппинг Statement с null полями должен корректно обрабатывать null значения в StatementResponseDto")
+    void toStatementResponseDtoShouldHandleNullFields() {
+        Statement nullStatement = Statement.builder()
+                .statementId(UUID.randomUUID())
+                .build();
+
+        StatementResponseDto result = statementMapper.toStatementResponseDto(nullStatement);
+
+        assertNotNull(result);
+        assertEquals(nullStatement.getStatementId(), result.getStatementId());
+        assertThat(result.getClient()).isNull();
+        assertThat(result.getCredit()).isNull();
+        assertThat(result.getStatus()).isNull();
+        assertThat(result.getCreationDate()).isNull();
+        assertThat(result.getAppliedOffer()).isNull();
+        assertThat(result.getSignDate()).isNull();
+        assertThat(result.getStatusHistory()).isNull();
     }
 }

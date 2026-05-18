@@ -1,50 +1,39 @@
-spring:
-  application:
-    name: gateway
-  cloud:
-    gateway:
-      routes:
-        - id: deal-route
-          uri: http://deal-service:8081
-          predicates:
-            - Path=/api/v1/deal/**
-          filters:
-            - StripPrefix=0
-
-        - id: statement-route
-          uri: http://statement-service:8082
-          predicates:
-            - Path=/api/v1/statement/**
-          filters:
-            - StripPrefix=0
-
-        - id: openapi-deal
-          uri: http://deal-service:8081
-          predicates:
-            - Path=/deal/v3/api-docs
-          filters:
-            - RewritePath=/deal/v3/api-docs, /api-docs
-
-        - id: openapi-statement
-          uri: http://statement-service:8082
-          predicates:
-            - Path=/statement/v3/api-docs
-          filters:
-            - RewritePath=/statement/v3/api-docs, /api-docs
-
 server:
   port: 8084
 
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: statement-api
+          uri: http://statement:8082
+          predicates:
+            - Path=/api/v1/statement/**
+
+        - id: statement-docs
+          uri: http://statement:8082
+          predicates:
+            - Path=/statement/**
+          filters:
+            - RewritePath=/statement/(?<path>.*), /$\{path}
+
+        - id: deal-api
+          uri: http://deal:8081
+          predicates:
+            - Path=/api/v1/deal/**
+
+        - id: deal-docs
+          uri: http://deal:8081
+          predicates:
+            - Path=/deal/**
+          filters:
+            - RewritePath=/deal/(?<path>.*), /$\{path}
+
 springdoc:
-  api-docs:
-    enabled: true
-    path: /v3/api-docs
   swagger-ui:
-    enabled: true
     path: /swagger-ui.html
-    configUrl: /v3/api-docs/swagger-config
     urls:
       - name: Deal Service
-        url: /deal/v3/api-docs
+        url: ${DEAL_SERVICE_URL:http://localhost:8081/api-docs}
       - name: Statement Service
-        url: /statement/v3/api-docs
+        url: ${STATEMENT_SERVICE_URL:http://localhost:8082/api-docs}

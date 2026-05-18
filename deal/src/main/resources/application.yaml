@@ -20,6 +20,8 @@ server:
 springdoc:
   api-docs:
     path: /api-docs
+  servers:
+    - url: /api/v1/deal
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
@@ -32,6 +34,10 @@ calculator:
     base: /api/v1/calculator
     offers: /offers
     calc: /calc
+
+gateway:
+  service:
+    url: http://localhost:8084
 
 kafka:
   topics:
