@@ -9,6 +9,7 @@ import org.neoflex.deal.dto.DealDocumentDto;
 import org.neoflex.deal.dto.EmailMessage;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
+import org.neoflex.deal.dto.StatementResponseDto;
 import org.neoflex.deal.mapper.ClientMapper;
 import org.neoflex.deal.mapper.StatementMapper;
 import org.neoflex.deal.model.Client;
@@ -22,8 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.neoflex.deal.model.enums.ApplicationStatus.APPROVED;
 import static org.neoflex.deal.model.enums.ApplicationStatus.PREAPPROVAL;
@@ -111,5 +114,27 @@ public class StatementService {
                 );
 
         return statementMapper.toDealDocumentDto(statement, LocalDate.now());
+    }
+
+    @Transactional(readOnly = true)
+    public StatementResponseDto getStatement(UUID statementId) {
+
+        Statement statement = statementRepository.findFullStatementById(statementId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Не найдена заявка с id указанным в запросе: %s",statementId))
+                );
+
+        return statementMapper.toStatementResponseDto(statement);
+    }
+
+    @Transactional(readOnly = true)
+    public List<StatementResponseDto> getAllStatements() {
+        List<Statement> statements = statementRepository.findAllFullStatementById();
+        if (statements == null) {
+            return new ArrayList<>();
+        }
+        return statements.stream()
+                .map(statementMapper::toStatementResponseDto)
+                .collect(Collectors.toList());
     }
 }

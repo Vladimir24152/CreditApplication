@@ -24,7 +24,7 @@ public class GlobalExceptionHandler extends BaseGlobalExceptionHandler {
 
     @ExceptionHandler(CodeVerificationException.class)
     public ResponseEntity<HttpErrorInternalServiceResponse> handleCodeVerificationException(
-            EntityNotFoundException e) {
+            CodeVerificationException e) {
 
         return buildErrorInternalServiceResponse(
                 HttpStatus.FORBIDDEN,

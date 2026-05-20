@@ -58,7 +58,7 @@ public interface ClientMapper {
     @Mapping(target = "middleName", ignore = true)
     @Mapping(target = "birthDate", ignore = true)
     @Mapping(target = "email", ignore = true)
-    @Mapping(target = "accountNumber", ignore = true)
+    @Mapping(target = "accountNumber", source = "request.accountNumber")
     @Mapping(target = "passport", expression = "java(updatePassport(request, client.getPassport()))")
     @Mapping(target = "employment", expression = "java(toEmployment(request.getEmployment()))")
     @Mapping(target = "gender", source = "request.gender")

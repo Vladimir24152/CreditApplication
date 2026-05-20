@@ -30,17 +30,9 @@
     <div class="header"><h2>Подтверждение операции</h2></div>
     <div class="content">
         <p>Уважаемый клиент!</p>
-        <p>Для подтверждения подписания кредитного договора введите код:</p>
+        <p>Код для подтверждения подписания документов:</p>
         <p class="code" th:text="${code}"></p>
         <p>Номер заявки: <strong th:text="${statementId}"></strong></p>
-
-        <form th:action="${dealUrl} + '/api/v1/deal/document/' + ${statementId} + '/code'" method="post">
-            <div class="form-group">
-                <label for="code">Код подтверждения:</label><br><br>
-                <input type="text" id="code" name="code" class="code-input" placeholder="Введите 6-значный код" required pattern="[0-9]{6}" maxlength="6">
-            </div>
-            <button type="submit" class="button">Подтвердить</button>
-        </form>
 
         <p>С уважением,<br>Команда кредитного отдела</p>
     </div>

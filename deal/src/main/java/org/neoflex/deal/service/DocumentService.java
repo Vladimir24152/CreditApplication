@@ -17,8 +17,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static org.neoflex.deal.model.enums.ApplicationStatus.APPROVED;
+import static org.neoflex.deal.model.enums.ApplicationStatus.DOCUMENT_CREATED;
+import static org.neoflex.deal.model.enums.ApplicationStatus.DOCUMENT_SIGNED;
+import static org.neoflex.deal.model.enums.ApplicationStatus.PREPARE_DOCUMENTS;
 import static org.neoflex.deal.model.enums.Theme.CREDIT_ISSUED;
 import static org.neoflex.deal.model.enums.Theme.SEND_DOCUMENTS;
 import static org.neoflex.deal.model.enums.Theme.SEND_SES;
@@ -41,6 +46,9 @@ public class DocumentService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Не найдена заявка с id указанным в запросе: %s",statementId)));
 
+        statement.setStatus(PREPARE_DOCUMENTS);
+        statementRepository.save(statement);
+
         EmailMessage message = EmailMessage.builder()
                 .address(statement.getClient().getEmail())
                 .theme(SEND_DOCUMENTS)
@@ -57,8 +65,17 @@ public class DocumentService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Не найдена заявка с id указанным в запросе: %s",statementId)));
 
+        if (statement.getStatus() != PREPARE_DOCUMENTS) {
+            throw new IllegalStateException(
+                    String.format("Некорректный статус заявки %s для завершения регистрации. Ожидаемый статус %s," +
+                                    " текущий статус: %s",
+                            statementId, DOCUMENT_CREATED, statement.getStatus())
+            );
+        }
+
         String code = String.format("%06d", random.nextInt(1000000));
         statement.setSesCode(code);
+        statement.setStatus(DOCUMENT_CREATED);
         statementRepository.save(statement);
 
         EmailMessage message = EmailMessage.builder()
@@ -78,6 +95,14 @@ public class DocumentService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Не найдена заявка с id указанным в запросе: %s",statementId)));
 
+        if (statement.getStatus() != DOCUMENT_CREATED) {
+            throw new IllegalStateException(
+                    String.format("Некорректный статус заявки %s для завершения регистрации. Ожидаемый статус %s," +
+                                    " текущий статус: %s",
+                            statementId, DOCUMENT_CREATED, statement.getStatus())
+            );
+        }
+
         String expectedCode = statement.getSesCode();
 
         if (!expectedCode.equals(code)) {
@@ -87,6 +112,7 @@ public class DocumentService {
         Credit credit = statement.getCredit();
         credit.setCreditStatus(CreditStatus.ISSUED);
         statement.setStatus(ApplicationStatus.CREDIT_ISSUED);
+        statement.setSignDate(LocalDateTime.now());
 
         creditRepository.save(credit);
         statementRepository.save(statement);

@@ -1,11 +1,13 @@
 package org.neoflex.deal.controller;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -252,36 +254,5 @@ public class DealController {
             @PathVariable UUID statementId
     ){
         creditService.completeRegistration(request, statementId);
-    }
-
-    @Operation(summary = "Получение информации для составления документов для оформления кредита",
-            description = "Принимает id заявки на кредит и возвращает информацию для составления документов")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Успешное получение информации по кредиту",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = DealDocumentDto.class)
-                    )
-            ),
-            @ApiResponse(responseCode = "404",
-                    description = "Не найдена заявка с id указанным в запросе",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class)
-                    )
-            ),
-            @ApiResponse(responseCode = "500",
-                    description = "Внутренняя ошибка сервера при обработке запроса",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class)
-                    )
-            )
-    })
-    @GetMapping("/{statementId}")
-    public DealDocumentDto getInfo(@PathVariable UUID statementId){
-        return statementService.getInfo(statementId);
     }
 }
