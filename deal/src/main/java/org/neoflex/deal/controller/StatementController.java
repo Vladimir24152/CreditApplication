@@ -53,8 +53,8 @@ public class StatementController {
             )
     })
     @GetMapping("/{statementId}")
-    public StatementResponseDto get(@PathVariable UUID statementId){
-        return statementService.get(statementId);
+    public StatementResponseDto getStatement(@PathVariable UUID statementId){
+        return statementService.getStatement(statementId);
     }
 
     @Operation(summary = "Запрос на получения всех заявок")
@@ -76,7 +76,7 @@ public class StatementController {
             )
     })
     @GetMapping
-    public List<StatementResponseDto> getAll(){
-        return statementService.getAll();
+    public List<StatementResponseDto> getAllStatements(){
+        return statementService.getAllStatements();
     }
 }
