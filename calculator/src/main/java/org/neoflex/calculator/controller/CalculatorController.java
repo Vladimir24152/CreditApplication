@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.neoflex.calculator.dto.LoanStatementRequestDto;
 import org.neoflex.calculator.dto.ScoringDataDto;
 import org.neoflex.calculator.dto.response.CreditDto;
-import org.neoflex.calculator.dto.response.HttpErrorResponse;
+import org.neoflex.calculator.dto.response.HttpErrorInternalServiceResponse;
 import org.neoflex.calculator.dto.response.LoanOfferDto;
 import org.neoflex.calculator.service.CreditCalculationService;
 import org.neoflex.calculator.service.LoanOfferService;
@@ -95,7 +95,7 @@ public class CalculatorController {
                     description = "Ошибка валидации входных данных (неверный формат email, паспорта и т.д.)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "validationErrorExample",
                                     summary = "Ответ ошибки валидации",
@@ -115,7 +115,7 @@ public class CalculatorController {
                     description = "Ошибка скоринга - клиент не проходит по условиям (возраст, стаж, доход)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "scoringErrorExample",
                                     summary = "Пример ошибки скоринга",
@@ -135,7 +135,7 @@ public class CalculatorController {
                     description = "Внутренняя ошибка сервера",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "internalErrorExample",
                                     summary = "Пример пример внутренней ошибки",
@@ -283,7 +283,7 @@ public class CalculatorController {
                     description = "Ошибка валидации входных данных (некорректная дата рождения, паспортные данные)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "validationErrorExample",
                                     summary = "Ответ ошибки валидации",
@@ -302,7 +302,7 @@ public class CalculatorController {
                     description = "Отказ в кредите по результатам скоринга (не трудоустроен, низкий доход, плохая кредитная история)",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "scoringErrorExample",
                                     summary = "Пример ошибки скоринга",
@@ -321,7 +321,7 @@ public class CalculatorController {
                     description = "Внутренняя ошибка сервера при обработке запроса",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HttpErrorResponse.class),
+                            schema = @Schema(implementation = HttpErrorInternalServiceResponse.class),
                             examples = @ExampleObject(
                                     name = "internalErrorExample",
                                     summary = "Пример пример внутренней ошибки",

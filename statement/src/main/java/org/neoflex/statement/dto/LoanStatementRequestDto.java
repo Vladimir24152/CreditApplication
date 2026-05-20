@@ -1,4 +1,4 @@
-package org.neoflex.calculator.dto;
+package org.neoflex.statement.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.neoflex.calculator.validation.annotation.Adult;
+import org.neoflex.statement.validation.annotation.Adult;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
