@@ -5,18 +5,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.neoflex.deal.client.calculator.CalculatorClientService;
-import org.neoflex.deal.dto.ClientDto;
-import org.neoflex.deal.dto.CreditDto;
 import org.neoflex.deal.dto.DealDocumentDto;
 import org.neoflex.deal.dto.EmailMessage;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
 import org.neoflex.deal.dto.StatementResponseDto;
 import org.neoflex.deal.mapper.ClientMapper;
-import org.neoflex.deal.mapper.CreditMapper;
 import org.neoflex.deal.mapper.StatementMapper;
 import org.neoflex.deal.model.Client;
-import org.neoflex.deal.model.Credit;
 import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.jsonb.StatusHistory;
 import org.neoflex.deal.producer.KafkaProducerService;
@@ -121,7 +117,7 @@ public class StatementService {
     }
 
     @Transactional(readOnly = true)
-    public StatementResponseDto get(UUID statementId) {
+    public StatementResponseDto getStatement(UUID statementId) {
 
         Statement statement = statementRepository.findFullStatementById(statementId)
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -132,7 +128,7 @@ public class StatementService {
     }
 
     @Transactional(readOnly = true)
-    public List<StatementResponseDto> getAll() {
+    public List<StatementResponseDto> getAllStatements() {
         List<Statement> statements = statementRepository.findAllFullStatementById();
         if (statements == null) {
             return new ArrayList<>();

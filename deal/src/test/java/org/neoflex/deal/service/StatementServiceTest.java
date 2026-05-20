@@ -343,14 +343,14 @@ class StatementServiceTest {
 
     @Test
     @DisplayName("При получении несуществующей заявки выбрасывается EntityNotFoundException")
-    void whenGetStatementByIdNotFoundThenThrowEntityNotFoundException() {
+    void whenGetStatementStatementByIdNotFoundThenThrowEntityNotFoundException() {
         UUID nonExistentId = UUID.randomUUID();
 
         when(statementRepository.findFullStatementById(nonExistentId))
                 .thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
-                () -> statementService.get(nonExistentId));
+                () -> statementService.getStatement(nonExistentId));
 
         assertTrue(exception.getMessage().contains(nonExistentId.toString()));
         verify(statementRepository).findFullStatementById(nonExistentId);
@@ -358,10 +358,10 @@ class StatementServiceTest {
 
     @Test
     @DisplayName("Получение всех заявок при пустом списке возвращает пустой список")
-    void whenGetAllStatementsReturnsEmptyList() {
+    void whenGetStatementAllStatementsReturnsEmptyList() {
         when(statementRepository.findAllFullStatementById()).thenReturn(new ArrayList<>());
 
-        List<StatementResponseDto> result = statementService.getAll();
+        List<StatementResponseDto> result = statementService.getAllStatements();
 
         assertNotNull(result);
         assertTrue(result.isEmpty());

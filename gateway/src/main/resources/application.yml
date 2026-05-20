@@ -5,29 +5,19 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: statement-api
-          uri: http://statement:8082
-          predicates:
-            - Path=/api/v1/statement/**
-
-        - id: statement-docs
-          uri: http://statement:8082
-          predicates:
-            - Path=/statement/**
-          filters:
-            - RewritePath=/statement/(?<path>.*), /$\{path}
-
-        - id: deal-api
-          uri: http://deal:8081
-          predicates:
-            - Path=/api/v1/deal/**
-
-        - id: deal-docs
+        - id: deal
           uri: http://deal:8081
           predicates:
             - Path=/deal/**
           filters:
-            - RewritePath=/deal/(?<path>.*), /$\{path}
+            - RewritePath=/deal/(?<path>.*), /${path}
+
+        - id: statement
+          uri: http://statement:8082
+          predicates:
+            - Path=/statement/**
+          filters:
+            - RewritePath=/statement/(?<path>.*), /${path}
 
 springdoc:
   swagger-ui:
