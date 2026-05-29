@@ -23,13 +23,6 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
@@ -37,7 +30,10 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build and test with Maven
+      - name: Install all modules
+        run: mvn clean install -DskipTests
+
+      - name: Run tests and generate coverage
         run: mvn clean verify
 
       - name: Upload coverage to Codecov

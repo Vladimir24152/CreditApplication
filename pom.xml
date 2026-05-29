@@ -29,6 +29,7 @@
         <module>statement</module>
         <module>dossier</module>
         <module>gateway</module>
+        <module>credit-application-support-starter</module>
     </modules>
 
     <dependencyManagement>
