@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.neoflex.statement.validation.annotation.Adult;
+import org.neoflex.credit.lib.validation.annotation.Adult;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

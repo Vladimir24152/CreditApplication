@@ -10,12 +10,14 @@ import org.neoflex.deal.model.enums.ApplicationStatus;
 import org.neoflex.deal.model.enums.ChangeType;
 import org.neoflex.deal.model.jsonb.Passport;
 import org.neoflex.deal.model.jsonb.StatusHistory;
+import org.neoflex.deal.producer.KafkaProducerService;
 import org.neoflex.deal.repository.ClientRepository;
 import org.neoflex.deal.repository.StatementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -33,6 +35,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 
 @SpringBootTest
 @Testcontainers
@@ -51,6 +55,9 @@ class StatementServiceConcurrencyTest {
     @Autowired
     private ClientRepository clientRepository;
 
+    @MockitoBean
+    private KafkaProducerService kafkaProducerService;
+
     private UUID statementId;
     private LoanOfferDto offer;
     private Client client;
@@ -68,6 +75,8 @@ class StatementServiceConcurrencyTest {
 
     @BeforeEach
     void setup() {
+        doNothing().when(kafkaProducerService).send(any());
+
         client = clientRepository.save(Client.builder()
                 .firstName("Test")
                 .lastName("User")

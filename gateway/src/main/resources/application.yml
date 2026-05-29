@@ -1,0 +1,29 @@
+server:
+  port: 8084
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: deal
+          uri: http://deal:8081
+          predicates:
+            - Path=/deal/**
+          filters:
+            - RewritePath=/deal/(?<path>.*), /${path}
+
+        - id: statement
+          uri: http://statement:8082
+          predicates:
+            - Path=/statement/**
+          filters:
+            - RewritePath=/statement/(?<path>.*), /${path}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Deal Service
+        url: ${DEAL_SERVICE_URL:http://localhost:8081/api-docs}
+      - name: Statement Service
+        url: ${STATEMENT_SERVICE_URL:http://localhost:8082/api-docs}

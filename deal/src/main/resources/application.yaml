@@ -10,12 +10,18 @@ spring:
     default-schema: public
     drop-first: false
 
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+
 server:
   port: 8081
 
 springdoc:
   api-docs:
     path: /api-docs
+  servers:
+    - url: /api/v1/deal
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
@@ -28,3 +34,16 @@ calculator:
     base: /api/v1/calculator
     offers: /offers
     calc: /calc
+
+gateway:
+  service:
+    url: http://localhost:8084
+
+kafka:
+  topics:
+    finish-registration: finish-registration
+    create-documents: create-documents
+    send-documents: send-documents
+    send-ses: send-ses
+    credit-issued: credit-issued
+    statement-denied: statement-denied

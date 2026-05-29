@@ -11,12 +11,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.neoflex.deal.client.calculator.CalculatorClientService;
 import org.neoflex.deal.dto.LoanOfferDto;
 import org.neoflex.deal.dto.LoanStatementRequestDto;
+import org.neoflex.deal.dto.StatementResponseDto;
 import org.neoflex.deal.mapper.ClientMapper;
+import org.neoflex.deal.mapper.StatementMapper;
 import org.neoflex.deal.model.Client;
 import org.neoflex.deal.model.Statement;
 import org.neoflex.deal.model.enums.ApplicationStatus;
 import org.neoflex.deal.model.enums.ChangeType;
 import org.neoflex.deal.model.jsonb.StatusHistory;
+import org.neoflex.deal.producer.KafkaProducerService;
 import org.neoflex.deal.repository.ClientRepository;
 import org.neoflex.deal.repository.StatementRepository;
 
@@ -35,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -54,7 +58,13 @@ class StatementServiceTest {
     private CalculatorClientService calculatorClientService;
 
     @Mock
+    private KafkaProducerService kafkaProducerService;
+
+    @Mock
     private ClientMapper clientMapper;
+
+    @Mock
+    private StatementMapper statementMapper;
 
     @InjectMocks
     private StatementService statementService;
@@ -175,6 +185,7 @@ class StatementServiceTest {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         statementService.selectOffer(loanOfferRequest);
 
@@ -218,6 +229,7 @@ class StatementServiceTest {
     void whenStatusChangesThenHistoryPreservesOrder() {
         testStatement.setStatusHistory(new ArrayList<>());
         testStatement.setStatus(ApplicationStatus.PREAPPROVAL);
+        doNothing().when(kafkaProducerService).send(any());
 
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
@@ -273,6 +285,7 @@ class StatementServiceTest {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         statementService.selectOffer(loanOfferRequest);
 
@@ -286,6 +299,7 @@ class StatementServiceTest {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         statementService.selectOffer(loanOfferRequest);
 
@@ -300,6 +314,7 @@ class StatementServiceTest {
         when(statementRepository.findById(loanOfferRequest.getStatementId()))
                 .thenReturn(Optional.of(testStatement));
         when(statementRepository.save(any())).thenReturn(testStatement);
+        doNothing().when(kafkaProducerService).send(any());
 
         statementService.selectOffer(loanOfferRequest);
 
@@ -324,5 +339,32 @@ class StatementServiceTest {
         verify(clientRepository).save(any());
         verify(statementRepository).save(any());
         verify(calculatorClientService).calculateLoanOffers(loanStatementRequest);
+    }
+
+    @Test
+    @DisplayName("При получении несуществующей заявки выбрасывается EntityNotFoundException")
+    void whenGetStatementStatementByIdNotFoundThenThrowEntityNotFoundException() {
+        UUID nonExistentId = UUID.randomUUID();
+
+        when(statementRepository.findFullStatementById(nonExistentId))
+                .thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class,
+                () -> statementService.getStatement(nonExistentId));
+
+        assertTrue(exception.getMessage().contains(nonExistentId.toString()));
+        verify(statementRepository).findFullStatementById(nonExistentId);
+    }
+
+    @Test
+    @DisplayName("Получение всех заявок при пустом списке возвращает пустой список")
+    void whenGetStatementAllStatementsReturnsEmptyList() {
+        when(statementRepository.findAllFullStatementById()).thenReturn(new ArrayList<>());
+
+        List<StatementResponseDto> result = statementService.getAllStatements();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(statementRepository).findAllFullStatementById();
     }
 }

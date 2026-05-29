@@ -1,18 +1,20 @@
 package org.neoflex.statement.controller;
 
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.neoflex.credit.lib.exception.HttpErrorInternalServiceResponse;
 import org.neoflex.statement.dto.LoanOfferDto;
 import org.neoflex.statement.dto.LoanStatementRequestDto;
-import org.neoflex.statement.dto.response.HttpErrorInternalServiceResponse;
 import org.neoflex.statement.service.StatementService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

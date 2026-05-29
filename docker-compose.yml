@@ -38,6 +38,8 @@ services:
     depends_on:
       postgres_db:
         condition: service_healthy
+      init-kafka:
+        condition: service_completed_successfully
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres_db:5432/demo_db
@@ -46,6 +48,9 @@ services:
       - SPRING_JPA_SHOW_SQL=false
       - CALCULATOR_SERVICE_URL=http://calculator:8080
       - LIQUIBASE_ENABLED=true
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRINGDOC_USE-FORWARD-HEADERS=false
+      - SPRINGDOC_API-DOCS_SERVERS[0]_URL=/
     networks:
       - credit-network
 
@@ -56,11 +61,110 @@ services:
     container_name: statement-service
     ports:
       - "8082:8082"
+    depends_on:
+      deal:
+        condition: service_started
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - DEAL_SERVICE_ADDRESS=http://deal:8081
+      - SPRINGDOC_USE-FORWARD-HEADERS=false
+      - SPRINGDOC_API-DOCS_SERVERS[0]_URL=/
     networks:
       - credit-network
+
+  dossier:
+    build:
+      context: ./dossier
+      dockerfile: Dockerfile
+    container_name: dossier-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      kafka:
+        condition: service_started
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - MAIL_HOST=smtp.gmail.com
+      - MAIL_PORT=587
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+    networks:
+      - credit-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - credit-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - credit-network
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: init-kafka
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: |
+      echo 'Waiting 10 seconds for Kafka to fully stabilize...';
+      sleep 10;
+      echo 'Creating topics...';
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic finish-registration --replication-factor 1 --partitions 1;
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic create-documents --replication-factor 1 --partitions 1;
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic send-documents --replication-factor 1 --partitions 1;
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic send-ses --replication-factor 1 --partitions 1;
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic credit-issued --replication-factor 1 --partitions 1;
+      kafka-topics --create --if-not-exists --bootstrap-server kafka:9092 --topic statement-denied --replication-factor 1 --partitions 1;
+      echo 'Topics created successfully!';
+    networks:
+      - credit-network
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      deal:
+        condition: service_started
+      statement:
+        condition: service_started
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVER_PORT=8084
+    networks:
+      - credit-network
+    restart: unless-stopped
 
 networks:
   credit-network:

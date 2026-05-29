@@ -4,6 +4,8 @@ server:
 springdoc:
   api-docs:
     path: /api-docs
+  servers:
+    - url: /api/v1/statement
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
@@ -15,14 +17,6 @@ logging:
     org.neoflex.statement.interceptor: DEBUG
     org.springframework.web: INFO
     org.springframework.web.servlet: INFO
-#
-#deal:
-#  service:
-#    url: ${DEAL_SERVICE_URL:http://deal:8081}
-#  endpoints:
-#    base: ${DEAL_ENDPOINTS_BASE:/api/v1/deal}
-#    statement: ${DEAL_ENDPOINTS_STATEMENT:/statement}
-#    offer-select: ${DEAL_ENDPOINTS_OFFER-SELECT:/offer/select}
 
 client:
   deal:
@@ -33,3 +27,12 @@ client:
         path: ${CLIENT_DEAL_API_CALCULATE_PATH:/statement}
       select:
         path: ${CLIENT_DEAL_API_SELECT_PATH:/offer/select}
+
+gateway:
+  service:
+    url: ${GATEWAY_URL:http://localhost:8084}
+
+credit:
+  support:
+    logging:
+      enabled: true
