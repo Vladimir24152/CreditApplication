@@ -41,7 +41,7 @@ jobs:
         run: mvn clean verify
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@b9fd7d16f6bd7a9385811ffb469775a1e77b272b
+        uses: codecov/codecov-action@ca0a928a4cb3911011e868128a5cd90437c12db1
         with:
           files: ./**/target/site/jacoco/jacoco.xml
           fail_ci_if_error: false
