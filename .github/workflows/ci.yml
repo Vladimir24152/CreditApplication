@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - develop
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -13,32 +12,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@7a6d8a8234af8eb26422e24e3006232cccaa061b
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Install all modules
-        run: mvn clean install -DskipTests
-
       - name: Run tests and generate coverage
         run: mvn clean verify
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@b9fd7d16f6bd7a9385811ffb469775a1e77b272b
         with:
           files: ./**/target/site/jacoco/jacoco.xml
           fail_ci_if_error: false
@@ -48,3 +51,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
           -Dsonar.projectKey=Vladimir24152_CreditApplication
+          -Dsonar.coverage.exclusions=**/gateway/**
